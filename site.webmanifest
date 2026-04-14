@@ -1,0 +1,18 @@
+{
+  "name": "Tech Visualizer",
+  "short_name": "Visualizer",
+  "description": "Interactive visual study guides for software engineering, machine learning, cloud, and system design.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "icons": [
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

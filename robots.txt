@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://subramanyamnvr.github.io/Visualizers/sitemap.xml

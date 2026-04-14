@@ -1,0 +1,1206 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><script src="../../theme-sync.js"></script><script src="../../visualizer-shell.js"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Interactive comparison of AWS, Azure, and Google Cloud well-architected frameworks across reliability, security, operations, cost, performance, and sustainability."><title>Cloud Well-Architected Frameworks Atlas</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"><style>
+    :root {
+      --bg: #07111c;
+      --bg-2: #0b1726;
+      --surface: rgba(10, 21, 34, 0.9);
+      --surface-2: rgba(15, 29, 47, 0.96);
+      --surface-3: rgba(21, 39, 61, 0.98);
+      --border: rgba(124, 156, 192, 0.18);
+      --divider: rgba(124, 156, 192, 0.11);
+      --text: #edf5ff;
+      --muted: #a1b6ce;
+      --faint: #6d89a7;
+      --azure: #2f7dff;
+      --aws: #ff9f1a;
+      --gcp: #34a853;
+      --accent: #64b5ff;
+      --accent-2: #8cf2c1;
+      --accent-3: #ffd166;
+      --danger: #ff7b91;
+      --radius-md: 1rem;
+      --radius-lg: 1.4rem;
+      --pill: 999px;
+      --body: "Space Grotesk", system-ui, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+    }
+
+    [data-theme="light"] {
+      --bg: #edf4fb;
+      --bg-2: #dfeaf7;
+      --surface: rgba(255, 255, 255, 0.94);
+      --surface-2: rgba(248, 252, 255, 0.98);
+      --surface-3: rgba(240, 247, 255, 0.99);
+      --border: rgba(64, 96, 132, 0.15);
+      --divider: rgba(64, 96, 132, 0.1);
+      --text: #13212f;
+      --muted: #4e667f;
+      --faint: #7f97af;
+      --shadow: 0 20px 50px rgba(38, 77, 120, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      min-height: 100vh;
+      font-family: var(--body);
+      color: var(--text);
+      line-height: 1.65;
+      background:
+        radial-gradient(circle at top left, rgba(47, 125, 255, 0.16), transparent 23%),
+        radial-gradient(circle at top right, rgba(52, 168, 83, 0.14), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(255, 159, 26, 0.12), transparent 24%),
+        linear-gradient(180deg, var(--bg), var(--bg-2));
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,0.45), transparent 92%);
+    }
+    a { color: inherit; text-decoration: none; }
+    button { border: none; background: none; color: inherit; font: inherit; cursor: pointer; }
+    .shell { max-width: 1380px; margin: 0 auto; padding: 0 24px 72px; }
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 0;
+      backdrop-filter: blur(18px);
+      background: color-mix(in srgb, var(--bg) 84%, transparent);
+      border-bottom: 1px solid var(--divider);
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(47,125,255,0.16), rgba(255,159,26,0.1)), var(--surface-2);
+      box-shadow: var(--shadow);
+    }
+    .brand h1 { font-size: 1rem; font-weight: 700; }
+    .brand p { color: var(--muted); font: 0.74rem var(--mono); }
+    .header-actions, .quick-nav, .tab-row, .chip-row, .tag-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn, .nav-chip, .tab-btn, .meta-pill, .label, .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0.72rem 1rem;
+      border-radius: var(--pill);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+    }
+    .btn, .nav-chip, .tab-btn { transition: transform 150ms ease, border-color 150ms ease, color 150ms ease, background 150ms ease; }
+    .btn:hover, .nav-chip:hover, .tab-btn:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 54%, var(--border)); transform: translateY(-1px); }
+    .tab-btn.active, .nav-chip.active, .btn.active {
+      color: white;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--azure), color-mix(in srgb, var(--accent-2) 40%, var(--azure)));
+    }
+    .eyebrow, .label {
+      padding: 0.42rem 0.8rem;
+      border-color: rgba(100,181,255,0.26);
+      background: rgba(100,181,255,0.1);
+      color: var(--accent);
+      font: 0.72rem var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hero {
+      padding: 48px 0 28px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.22fr) minmax(320px, 0.78fr);
+      gap: 22px;
+    }
+    .hero-card, .panel, .section-card, .info-card, .mini-card, .timeline-card, .reference-card, .glossary-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 84%, transparent), var(--surface-2));
+      box-shadow: var(--shadow);
+    }
+    .hero-card, .section-card {
+      padding: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-card::after, .section-card::after {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      right: -120px;
+      top: -140px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(100,181,255,0.16), transparent 68%);
+      pointer-events: none;
+    }
+    .hero h2 {
+      margin-top: 18px;
+      font-size: clamp(2.5rem, 1.85rem + 2.6vw, 4.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      max-width: 11ch;
+    }
+    .hero h2 span { color: var(--accent-2); }
+    .hero-copy, .section-desc, .panel p, .info-card p, .mini-card p, .reference-card p, .glossary-card p, .timeline-card p, .muted { color: var(--muted); }
+    .hero-copy { max-width: 66ch; font-size: 1.02rem; margin-top: 16px; }
+    .tag-row { margin-top: 22px; }
+    .tag-row span, .meta-pill {
+      padding: 0.46rem 0.76rem;
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font: 0.72rem var(--mono);
+    }
+    .hero-side, .metric-grid, .stack, .vendor-mini-grid, .question-grid, .check-grid, .reference-grid, .glossary-grid, .roadmap-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .panel, .info-card, .mini-card, .timeline-card, .reference-card, .glossary-card, .detail-panel, .canvas-card { padding: 18px; border-radius: var(--radius-md); }
+    .metric-label {
+      color: var(--muted);
+      font: 0.72rem var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .metric-value {
+      font-size: clamp(1.8rem, 1.2rem + 2vw, 2.9rem);
+      line-height: 1;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .quick-nav {
+      position: sticky;
+      top: 78px;
+      z-index: 40;
+      padding: 12px 0 18px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 92%, transparent), color-mix(in srgb, var(--bg) 20%, transparent));
+      backdrop-filter: blur(14px);
+    }
+    .section-card { margin-top: 24px; }
+    .section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-bottom: 22px; }
+    .section-num { color: var(--accent-3); font: 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .section-title { font-size: clamp(1.35rem, 1.05rem + 1vw, 2.1rem); line-height: 1.08; margin-bottom: 8px; }
+    .grid-2, .grid-3 { display: grid; gap: 16px; }
+    .grid-2 { grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr); }
+    .grid-3, .vendor-mini-grid, .question-grid, .check-grid, .reference-grid, .glossary-grid, .roadmap-grid { grid-template-columns: repeat(3, 1fr); }
+    .canvas-card, .detail-panel { border: 1px solid var(--border); background: rgba(255,255,255,0.035); }
+    .canvas-card { overflow-x: auto; }
+    canvas {
+      width: 100%;
+      min-width: 920px;
+      display: block;
+      border-radius: calc(var(--radius-lg) - 0.2rem);
+      border: 1px solid var(--divider);
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent), color-mix(in srgb, var(--surface-3) 88%, transparent);
+    }
+    .caption { margin-top: 12px; color: var(--muted); font-size: 0.92rem; }
+    .info-card h4, .mini-card h4, .timeline-card h4, .reference-card h4, .glossary-card h4, .detail-panel h4 { margin-bottom: 8px; font-size: 1rem; }
+    .list, .question-list, .bar-list { list-style: none; display: grid; gap: 12px; margin-top: 12px; }
+    .list li, .question-list li {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .list li::before, .question-list li::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      margin-top: 0.42rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 16px rgba(100,181,255,0.24);
+    }
+    .vendor-badge { display: inline-flex; align-items: center; gap: 8px; font: 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+    .vendor-badge span { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .vendor-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--text); font-weight: 600; }
+    .matrix-list { display: grid; gap: 12px; }
+    .matrix-row {
+      display: grid;
+      grid-template-columns: minmax(180px, 1.05fr) repeat(3, minmax(0, 1fr)) minmax(210px, 1.1fr);
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+    .matrix-header { font: 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+    .matrix-cell { color: var(--muted); font-size: 0.93rem; }
+    .matrix-cell strong { color: var(--text); display: block; margin-bottom: 4px; }
+    .tone-note {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255,209,102,0.22);
+      background: rgba(255,209,102,0.08);
+      color: var(--muted);
+    }
+    .bar-item { display: grid; gap: 6px; }
+    .bar-item span { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 0.88rem; }
+    .bar-track { height: 10px; border-radius: var(--pill); background: rgba(255,255,255,0.06); border: 1px solid var(--divider); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+    .timeline-step { padding-left: 16px; border-left: 2px solid var(--divider); }
+    .search-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .search-row input {
+      min-width: min(100%, 320px);
+      padding: 0.84rem 1rem;
+      border-radius: var(--pill);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font: 0.96rem var(--body);
+      outline: none;
+    }
+    .footer-note { margin-top: 18px; text-align: center; color: var(--muted); font-size: 0.94rem; }
+    .footer-note strong { color: var(--text); }
+    @media (max-width: 1150px) {
+      .hero, .grid-2 { grid-template-columns: 1fr; }
+      .grid-3, .vendor-mini-grid, .question-grid, .check-grid, .reference-grid, .roadmap-grid, .glossary-grid { grid-template-columns: repeat(2, 1fr); }
+      .matrix-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .shell { padding: 0 16px 56px; }
+      .header { flex-direction: column; align-items: flex-start; }
+      .hero-card, .section-card { padding: 22px; }
+      .metric-grid, .grid-3, .vendor-mini-grid, .question-grid, .check-grid, .reference-grid, .roadmap-grid, .glossary-grid { grid-template-columns: 1fr; }
+      .quick-nav { top: 96px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+      .quick-nav > * { flex: 0 0 auto; }
+      .tab-row { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+      .tab-row > * { flex: 0 0 auto; }
+      canvas { min-width: 100%; }
+    }
+  </style></head><body><div class="shell"><header class="header"><div class="brand"><div class="brand-mark" aria-hidden="true"><svg viewbox="0 0 32 32" width="24" height="24" fill="none"><circle cx="8.5" cy="16" r="4.5" fill="#2F7DFF"/><circle cx="23.5" cy="9" r="4.5" fill="#34A853"/><circle cx="23.5" cy="23" r="4.5" fill="#FF9F1A"/><path d="M12.5 16H19" stroke="#EAF5FF" stroke-width="2" stroke-linecap="round"/><path d="M12 14L19 10.5" stroke="#EAF5FF" stroke-width="2" stroke-linecap="round"/><path d="M12 18L19 21.5" stroke="#EAF5FF" stroke-width="2" stroke-linecap="round"/></svg></div><div><h1>Cloud Well-Architected Frameworks Atlas</h1><p>Azure, AWS, and Google Cloud compared through pillars, review loops, and practical tradeoffs</p></div></div><div class="header-actions"><button class="btn" type="button" data-theme-toggle>Theme</button><a class="btn" href="#pillars">Pillar Studio</a><a class="btn" href="#references">Sources</a></div></header><main><section class="hero" id="top"><article class="hero-card"><div class="eyebrow"><span>Azure</span><span>AWS</span><span>Google Cloud</span></div><h2>One visual map for <span>well-architected thinking</span> across clouds.</h2><p class="hero-copy"> This atlas turns the three major cloud architecture frameworks into one navigable reference. Use it to understand what each provider is optimizing for, how the pillars line up, where the models diverge, and how tradeoffs move as a workload matures from first deployment to steady-state operations. </p><div class="tag-row"><span>Pillar crosswalks</span><span>Animated maps</span><span>Review flows</span><span>Workload scenarios</span><span>Tradeoff drills</span><span>Source links</span></div></article><div class="hero-side"><div class="metric-grid"><article class="panel"><div class="metric-label">Frameworks</div><div class="metric-value">3</div><p>Azure Well-Architected, AWS Well-Architected, and the Google Cloud Well-Architected Framework.</p></article><article class="panel"><div class="metric-label">Pillar Views</div><div class="metric-value">6</div><p>Operational, security, reliability, performance, cost, and sustainability with cloud-specific nuance.</p></article><article class="panel"><div class="metric-label">Study Modes</div><div class="metric-value">5</div><p>Map, crosswalk, pillar studio, vendor playbooks, workload review, and tradeoff simulation.</p></article><article class="panel"><div class="metric-label">Signals</div><div class="metric-value">20+</div><p>Recovery targets, observability, FinOps, zero trust, elasticity, region choices, and review artifacts.</p></article></div><article class="panel"><div class="metric-label">How To Read It</div><p>Start with the framework map, line up the terms in the crosswalk, then move into a pillar or scenario so the guidance feels operational instead of abstract.</p></article></div></section><nav class="quick-nav" aria-label="Section navigation"><a class="nav-chip" href="#map">Map</a><a class="nav-chip" href="#crosswalk">Crosswalk</a><a class="nav-chip" href="#pillars">Pillars</a><a class="nav-chip" href="#vendors">Vendors</a><a class="nav-chip" href="#review">Review</a><a class="nav-chip" href="#tradeoffs">Tradeoffs</a><a class="nav-chip" href="#glossary">Glossary</a><a class="nav-chip" href="#references">References</a></nav><section class="section-card" id="map"><div class="section-head"><div><div class="section-num">01 / Mental Model</div><h3 class="section-title">Three frameworks, one architecture conversation.</h3><p class="section-desc">All three vendors organize around non-functional quality attributes, but they package them differently. Azure centers five pillars and expands through workloads and service guides. AWS turns the model into a six-pillar framework with Lenses, labs, and a review tool. Google Cloud combines pillars with cross-pillar perspectives and strong principle language.</p></div></div><div class="grid-2"><div class="canvas-card"><canvas id="frameworkCanvas" aria-label="Framework map visualization"></canvas><p class="caption">Shared quality goals sit in the middle. Azure connects sustainability as dedicated workload guidance, while AWS and Google Cloud treat it as a first-class pillar.</p></div><div class="stack"><article class="info-card"><h4>What all three frameworks are doing</h4><ul class="list"><li>They turn architecture review into a repeatable operating practice instead of a one-time design deck.</li><li>They make non-functional requirements concrete enough to inspect, test, and prioritize.</li><li>They force tradeoffs into the open so teams can justify why a workload is optimized the way it is.</li></ul></article><article class="info-card"><h4>Where they differ</h4><ul class="list"><li>Azure leans into design areas, workload guides, and staged maturity models.</li><li>AWS adds a broad ecosystem of Lenses, prescriptive guidance, labs, and the Well-Architected Tool.</li><li>Google Cloud adds perspectives, explicit core principles, and cross-pillar guidance for AI and regulated industries.</li></ul></article><div class="vendor-mini-grid"><article class="mini-card"><div class="vendor-badge"><span style="background:#2f7dff"></span>Azure</div><h4>Five core pillars</h4><p>Reliability, security, cost optimization, operational excellence, and performance efficiency.</p><a class="vendor-link" href="https://learn.microsoft.com/en-us/azure/well-architected/" target="_blank" rel="noreferrer">Open Microsoft Learn</a></article><article class="mini-card"><div class="vendor-badge"><span style="background:#ff9f1a"></span>AWS</div><h4>Six pillars and a review tool</h4><p>Operational excellence, security, reliability, performance efficiency, cost optimization, and sustainability.</p><a class="vendor-link" href="https://aws.amazon.com/architecture/well-architected/" target="_blank" rel="noreferrer">Open AWS Architecture Center</a></article><article class="mini-card"><div class="vendor-badge"><span style="background:#34a853"></span>Google Cloud</div><h4>Pillars plus perspectives</h4><p>Core pillars are complemented by perspectives such as AI/ML and financial services.</p><a class="vendor-link" href="https://docs.cloud.google.com/architecture/framework" target="_blank" rel="noreferrer">Open Architecture Center</a></article></div></div></div></section><section class="section-card" id="crosswalk"><div class="section-head"><div><div class="section-num">02 / Crosswalk</div><h3 class="section-title">How the pillars line up across vendors.</h3><p class="section-desc">The names are close enough to create a common language, but the framing is not identical. The same word can imply a different review surface or a different set of supporting artifacts depending on the cloud.</p></div></div><div class="grid-2"><div class="detail-panel"><div class="matrix-list" id="crosswalkRows"></div><div class="tone-note"><strong>Read this carefully:</strong> Azure keeps sustainability as workload guidance connected to the five pillars, while AWS and Google Cloud elevate sustainability into the main framework. That changes how visible the topic is during routine reviews.</div></div><div class="canvas-card"><canvas id="crosswalkCanvas" aria-label="Pillar crosswalk visualization"></canvas><p class="caption">Operations, security, reliability, cost, and performance are universal structure. Sustainability is where the framework shape clearly splits.</p></div></div></section><section class="section-card" id="pillars"><div class="section-head"><div><div class="section-num">03 / Pillar Studio</div><h3 class="section-title">Pick one pillar and watch the vendor emphasis change.</h3><p class="section-desc">Each pillar below blends shared concerns with provider-specific recommendations and artifacts. Use this to move from vague phrases like “make it more reliable” into a sharper review discussion about targets, controls, ownership, testing, and operating habits.</p></div></div><div class="tab-row" id="pillarButtons" aria-label="Pillar selection"></div><div class="grid-2" style="margin-top:16px;"><div class="canvas-card"><canvas id="pillarCanvas" aria-label="Selected pillar visualization"></canvas><p class="caption" id="pillarCaption"></p></div><div class="stack"><article class="detail-panel"><div class="label" id="pillarLabel"></div><h4 id="pillarTitle" style="margin-top:14px;"></h4><p class="hero-copy" id="pillarLead" style="margin-top:10px; font-size:0.98rem;"></p><div class="chip-row" id="pillarMeta" style="margin-top:14px;"></div><div class="bar-list" id="pillarBars"></div></article><div class="vendor-mini-grid" id="pillarVendorCards"></div><div class="question-grid" id="pillarQuestions"></div></div></div></section><section class="section-card" id="vendors"><div class="section-head"><div><div class="section-num">04 / Vendor Playbooks</div><h3 class="section-title">What each provider adds around the pillar model.</h3><p class="section-desc">A framework becomes practical when it is surrounded by tools, maturity guidance, review artifacts, and workload-specific extensions. This section shows the rest of the iceberg behind the headline pillars.</p></div></div><div class="tab-row" id="vendorButtons" aria-label="Vendor selection"></div><div class="grid-2" style="margin-top:16px;"><div class="stack"><article class="detail-panel"><div class="label" id="vendorLabel"></div><h4 id="vendorTitle" style="margin-top:14px;"></h4><p class="hero-copy" id="vendorLead" style="margin-top:10px; font-size:0.98rem;"></p></article><div class="vendor-mini-grid" id="vendorArtifacts"></div><div class="check-grid" id="vendorRoute"></div></div><div class="canvas-card"><canvas id="vendorCanvas" aria-label="Vendor playbook visualization"></canvas><p class="caption" id="vendorCaption"></p></div></div></section><section class="section-card" id="review"><div class="section-head"><div><div class="section-num">05 / Workload Review</div><h3 class="section-title">The same framework behaves differently under different workload pressure.</h3><p class="section-desc">A startup SaaS product, a regulated platform, and a global analytics system do not review the pillars in the same order. Switch scenarios to see how the weight shifts across reliability, cost, operations, security, performance, and sustainability.</p></div></div><div class="tab-row" id="scenarioButtons" aria-label="Scenario selection"></div><div class="grid-2" style="margin-top:16px;"><div class="canvas-card"><canvas id="reviewCanvas" aria-label="Scenario review radar visualization"></canvas><p class="caption" id="scenarioCaption"></p></div><div class="stack"><article class="detail-panel"><div class="label" id="scenarioLabel"></div><h4 id="scenarioTitle" style="margin-top:14px;"></h4><p class="hero-copy" id="scenarioLead" style="margin-top:10px; font-size:0.98rem;"></p><div class="bar-list" id="scenarioBars"></div></article><div class="check-grid" id="scenarioChecklist"></div><div class="question-grid" id="scenarioRisks"></div></div></div></section><section class="section-card" id="tradeoffs"><div class="section-head"><div><div class="section-num">06 / Tradeoffs</div><h3 class="section-title">No pillar moves alone.</h3><p class="section-desc">This is the heart of well-architected review work. Improve one quality attribute too aggressively and another one starts asking hard questions. Use the tension presets to make those collisions visible.</p></div></div><div class="tab-row" id="tradeoffButtons" aria-label="Tradeoff selection"></div><div class="grid-2" style="margin-top:16px;"><div class="canvas-card"><canvas id="tradeoffCanvas" aria-label="Tradeoff visualization"></canvas><p class="caption" id="tradeoffCaption"></p></div><div class="stack"><article class="detail-panel"><div class="label" id="tradeoffLabel"></div><h4 id="tradeoffTitle" style="margin-top:14px;"></h4><p class="hero-copy" id="tradeoffLead" style="margin-top:10px; font-size:0.98rem;"></p><div class="bar-list" id="tradeoffBars"></div></article><div class="check-grid" id="tradeoffMoves"></div><div class="question-grid" id="tradeoffGuardrails"></div></div></div></section><section class="section-card" id="glossary"><div class="section-head"><div><div class="section-num">07 / Glossary</div><h3 class="section-title">Fast definitions for the phrases that keep showing up in reviews.</h3><p class="section-desc">These are the terms that bridge cloud architecture, operations, and review posture. Search them to get a quick anchor before you dive back into the visual sections.</p></div></div><div class="search-row"><input id="glossaryInput" type="search" placeholder="Search terms like SLO, zero trust, FinOps, blast radius..."></div><div class="glossary-grid" id="glossaryGrid"></div></section><section class="section-card" id="references"><div class="section-head"><div><div class="section-num">08 / Source Trail</div><h3 class="section-title">Official documentation used to shape this visualizer.</h3><p class="section-desc">The explanations in this atlas are synthesized from the vendor framework overviews and supporting pillar guidance rather than from secondary summaries.</p></div></div><div class="reference-grid"><article class="reference-card"><h4>Microsoft Azure</h4><p>Framework overview, pillars matrix, workload guidance, design essentials, and quick links for reliability, security, operations, cost, and performance.</p><a class="vendor-link" href="https://learn.microsoft.com/en-us/azure/well-architected/" target="_blank" rel="noreferrer">Azure Well-Architected Framework</a></article><article class="reference-card"><h4>AWS</h4><p>Architecture Center overview, six-pillar summary, Well-Architected Tool, Lenses, and detailed pillar design principles for operations, security, performance, cost, reliability, and sustainability.</p><a class="vendor-link" href="https://aws.amazon.com/architecture/well-architected/" target="_blank" rel="noreferrer">AWS Well-Architected</a></article><article class="reference-card"><h4>Google Cloud</h4><p>Framework overview, pillar and perspective structure, operational excellence and reliability core principles, cost and performance guidance, and sustainability guidance.</p><a class="vendor-link" href="https://docs.cloud.google.com/architecture/framework" target="_blank" rel="noreferrer">Google Cloud Architecture Framework</a></article></div><div class="roadmap-grid" style="margin-top:18px;"><article class="timeline-card"><h4>1. Learn the common language</h4><div class="timeline-step"><p>Use the crosswalk before comparing services. The pillars are the real vocabulary underneath service catalogs.</p></div></article><article class="timeline-card"><h4>2. Review through workload shape</h4><div class="timeline-step"><p>Availability targets, regulatory posture, demand variability, and spend constraints decide which pillar goes first.</p></div></article><article class="timeline-card"><h4>3. Re-run the loop</h4><div class="timeline-step"><p>As workloads grow, revisit targets, postmortems, cost signals, and operational evidence instead of treating architecture as frozen.</p></div></article></div><p class="footer-note"><strong>Tip:</strong> when a team says “make it well architected,” translate that into a pillar, a measurable target, a review artifact, and an operating habit.</p></section></main></div><script>
+    const frameworks = {
+      azure: {
+        label: "Azure",
+        color: "#2f7dff",
+        badge: "Azure",
+        summary: "Five core pillars backed by workload guides, design essentials, service guidance, review tooling, and newer maturity models.",
+        caption: "Azure starts from five architectural pillars, then expands outward through workload classes, design guides, service guides, and assessment loops.",
+        artifacts: [
+          { title: "Pillars to design areas", text: "Azure pushes teams from high-level principles into technical design areas so recommendations feel closer to implementation work." },
+          { title: "Workload guidance", text: "The framework extends into AI, SaaS, mission-critical, sustainability, SAP, Oracle on IaaS, Azure VMware Solution, and Azure Virtual Desktop." },
+          { title: "Assessment and maturity", text: "Azure Well-Architected Review and the newer maturity models turn architectural posture into staged improvement work." }
+        ],
+        route: [
+          { title: "Start with pillars", text: "Align the workload to reliability, security, cost optimization, operational excellence, and performance efficiency." },
+          { title: "Move into design essentials", text: "Apply prescriptive guidance around concrete decisions such as disaster recovery, background jobs, or monitoring." },
+          { title: "Review production posture", text: "Use Azure Well-Architected Review and Advisor-backed guidance to prioritize work before and after production." }
+        ],
+        pillars: {
+          operational: {
+            title: "Operational Excellence",
+            short: "Observability, DevOps, automation, and safe deployment practices.",
+            summary: "Azure frames operations as a discipline of shared standards, holistic observability, deliberate automation, and safe release habits.",
+            emphasis: 83,
+            keys: ["DevOps culture", "Standards", "Observability", "Automation", "Safe deployment"],
+            questions: [
+              "Can the team ship changes in small reversible batches?",
+              "Do dashboards and alerts map to business outcomes instead of only infrastructure symptoms?",
+              "Is toil being removed with automation rather than normalized?"
+            ]
+          },
+          security: {
+            title: "Security",
+            short: "CIA goals, zero-trust posture, readiness, and continuous improvement.",
+            summary: "Azure security guidance is built around confidentiality, integrity, availability, and a zero-trust mindset that evolves over time.",
+            emphasis: 88,
+            keys: ["Security readiness", "Confidentiality", "Integrity", "Availability", "Threat response"],
+            questions: [
+              "Is the workload segmented with clear trust boundaries?",
+              "Can identities, secrets, and sensitive paths be audited end to end?",
+              "Does security testing happen before and after deployment?"
+            ]
+          },
+          reliability: {
+            title: "Reliability",
+            short: "Business requirements, resilience, recovery, operations, and simplicity.",
+            summary: "Azure reliability stresses uptime and recovery targets, redundancy, resilience, recovery drills, and keeping the architecture simpler than the failure modes demand.",
+            emphasis: 91,
+            keys: ["Business targets", "Resilience", "Recovery", "Operations", "Simplicity"],
+            questions: [
+              "Are RTO and RPO defined from business impact rather than guesswork?",
+              "Can noncritical paths degrade gracefully without taking the whole experience down?",
+              "Do failure drills prove the recovery plan instead of just documenting it?"
+            ]
+          },
+          performance: {
+            title: "Performance Efficiency",
+            short: "Meet capacity needs, test continuously, scale horizontally, and optimize over time.",
+            summary: "Azure treats performance as capacity planning plus continuous measurement, horizontal scaling, and validation against realistic targets.",
+            emphasis: 79,
+            keys: ["Performance targets", "Capacity", "Scaling", "Load testing", "Continuous tuning"],
+            questions: [
+              "Have realistic latency and throughput targets been negotiated?",
+              "Do performance tests resemble real demand patterns and critical user flows?",
+              "Is optimization reducing waste as well as improving speed?"
+            ]
+          },
+          cost: {
+            title: "Cost Optimization",
+            short: "Cost-aware design, budget alignment, visibility, and ROI-driven tradeoffs.",
+            summary: "Azure cost guidance is less about chasing the cheapest bill and more about building a repeatable cost-efficiency mindset around ROI, usage, and waste reduction.",
+            emphasis: 77,
+            keys: ["Budget fit", "Growth baseline", "Utilization", "Tradeoffs", "Continuous visibility"],
+            questions: [
+              "Do design choices fit the expected growth curve and business budget?",
+              "Is the workload overbuilt for low-value paths or underbuilt for high-value ones?",
+              "Are hidden costs such as operations, licensing, and training visible?"
+            ]
+          },
+          sustainability: {
+            title: "Sustainability Guidance",
+            short: "A dedicated Azure workload track that extends the five pillars into carbon-aware decisions.",
+            summary: "Azure does not place sustainability inside the core five-pillar list, but it provides a dedicated workload series that layers carbon visibility and reduction tactics on top of the base architecture model.",
+            emphasis: 61,
+            keys: ["Carbon visibility", "Resource reduction", "Energy-aware testing", "Efficiency", "Long-term posture"],
+            questions: [
+              "Can the team measure current carbon impact before optimizing it?",
+              "Are tests and workloads scheduled or designed to avoid unnecessary resource burn?",
+              "Which other pillar decisions also reduce environmental impact?"
+            ]
+          }
+        }
+      },
+      aws: {
+        label: "AWS",
+        color: "#ff9f1a",
+        badge: "AWS",
+        summary: "Six-pillar framework with a free review tool, domain-specific Lenses, whitepapers, and labs for implementation guidance.",
+        caption: "AWS turns well-architected review into a platform: pillars, best-practice areas, Lenses, labs, and the Well-Architected Tool all work together.",
+        artifacts: [
+          { title: "Well-Architected Tool", text: "Teams assess workloads, record risks, identify high-risk issues, and track remediation inside the AWS console." },
+          { title: "Lenses and guidance", text: "AWS expands the base framework into domains like serverless, analytics, machine learning, games, SAP, hybrid networking, and more." },
+          { title: "Labs and whitepapers", text: "The framework is backed by hands-on labs and detailed pillar papers that turn principles into best-practice questions." }
+        ],
+        route: [
+          { title: "Assess the workload", text: "Start in the Well-Architected Tool, answer review questions, and surface high-risk issues." },
+          { title: "Apply the right Lens", text: "Use domain-specific Lenses to add workload context on top of the six universal pillars." },
+          { title: "Close the loop", text: "Use labs, whitepapers, and regular re-reviews to turn findings into architecture changes." }
+        ],
+        pillars: {
+          operational: {
+            title: "Operational Excellence",
+            short: "Business outcomes, observability, automation, small changes, and continuous improvement.",
+            summary: "AWS treats operational excellence as a commitment to build correctly, operate at scale, and keep evolving with business outcomes in view.",
+            emphasis: 87,
+            keys: ["Business outcomes", "Observability", "Automation", "Small changes", "Continuous improvement"],
+            questions: [
+              "Are teams organized around customer and business outcomes rather than only resource ownership?",
+              "Can operators act from telemetry quickly and safely?",
+              "Are changes frequent, reversible, and automated enough to reduce blast radius?"
+            ]
+          },
+          security: {
+            title: "Security",
+            short: "Identity foundation, traceability, defense in depth, automation, data protection, and incident readiness.",
+            summary: "AWS security guidance is explicit about least privilege, layered controls, traceability, automated guardrails, and preparation for security events.",
+            emphasis: 90,
+            keys: ["Identity", "Traceability", "Defense in depth", "Automated controls", "Incident preparation"],
+            questions: [
+              "Is the identity model removing long-lived credentials wherever possible?",
+              "Can the team detect and investigate changes in near real time?",
+              "Are incident playbooks exercised before the incident arrives?"
+            ]
+          },
+          reliability: {
+            title: "Reliability",
+            short: "Foundations, workload architecture, change management, and failure management.",
+            summary: "AWS frames reliability around correct and consistent function across the workload lifecycle, with strong emphasis on automated recovery and tested failure handling.",
+            emphasis: 92,
+            keys: ["Foundations", "Architecture", "Change management", "Failure management", "Automated recovery"],
+            questions: [
+              "Can the workload recover automatically from common faults?",
+              "Have recovery procedures been tested under realistic failure conditions?",
+              "Does the architecture isolate failure instead of amplifying it?"
+            ]
+          },
+          performance: {
+            title: "Performance Efficiency",
+            short: "Use managed primitives well, go global, experiment, and align tech choices to workload mechanics.",
+            summary: "AWS performance guidance blends service selection, elasticity, serverless thinking, experimentation, and mechanical sympathy with the workload's real behavior.",
+            emphasis: 84,
+            keys: ["Managed services", "Global reach", "Serverless", "Experimentation", "Mechanical sympathy"],
+            questions: [
+              "Are teams using managed services where that reduces operational burden and improves scaling behavior?",
+              "Do tests compare service choices instead of locking in early assumptions?",
+              "Is the data path tuned for how the workload really reads, writes, and caches?"
+            ]
+          },
+          cost: {
+            title: "Cost Optimization",
+            short: "Cloud financial management, consumption pricing, attribution, and continuous efficiency review.",
+            summary: "AWS cost optimization is strongly tied to Cloud Financial Management, accurate attribution, elasticity, and measuring cost against business output.",
+            emphasis: 82,
+            keys: ["CFM", "Consumption model", "Efficiency", "Managed services", "Attribution"],
+            questions: [
+              "Can spend be attributed clearly to workload owners or business domains?",
+              "Is the team paying for idle capacity because demand assumptions were never revisited?",
+              "Are the gains in output worth the extra infrastructure cost?"
+            ]
+          },
+          sustainability: {
+            title: "Sustainability",
+            short: "Measure impact, set goals, maximize utilization, adopt efficient services, and reduce downstream impact.",
+            summary: "AWS makes sustainability a primary pillar and treats it as an engineering problem of impact measurement, utilization, efficient service choices, and lifecycle thinking.",
+            emphasis: 74,
+            keys: ["Impact measurement", "Goals", "Utilization", "Efficient offerings", "Downstream impact"],
+            questions: [
+              "Can the team measure emissions or impact per unit of useful work?",
+              "Are idle resources and over-provisioned storage being treated as sustainability issues?",
+              "Would a managed service reduce both toil and environmental footprint?"
+            ]
+          }
+        }
+      },
+      gcp: {
+        label: "Google Cloud",
+        color: "#34a853",
+        badge: "Google Cloud",
+        summary: "Pillars plus perspectives, explicit core principles, strong operational language, and sustainability guidance tied to region and resource choices.",
+        caption: "Google Cloud frames the model as pillars plus perspectives, then drills down into principle-led guidance for CloudOps, reliability, security, cost, performance, and sustainability.",
+        artifacts: [
+          { title: "Perspectives", text: "Cross-pillar views such as AI and ML or financial services adapt the framework to specific technology and regulatory realities." },
+          { title: "Core principles", text: "Google Cloud emphasizes principles like designing for change, documenting architecture, and using CloudOps, observability, and postmortems." },
+          { title: "Sustainability guidance", text: "The framework includes guidance for carbon-aware region selection, Carbon Footprint visibility, and reducing emissions through efficient design." }
+        ],
+        route: [
+          { title: "Start from principles", text: "Use the framework to align on what good cloud operations, reliability, cost, and security mean before discussing products." },
+          { title: "Add perspectives", text: "Pull in AI/ML or FSI perspective guidance where the base pillar recommendations are not enough." },
+          { title: "Operate and learn", text: "Use CloudOps, observability, realistic targets, and postmortems to turn architecture guidance into organizational habit." }
+        ],
+        pillars: {
+          operational: {
+            title: "Operational Excellence",
+            short: "CloudOps, incident and problem management, change automation, resource management, and continuous improvement.",
+            summary: "Google Cloud makes operational excellence feel like an operating system for the workload: CloudOps readiness, incident discipline, automation, and resource hygiene.",
+            emphasis: 86,
+            keys: ["CloudOps", "Incident management", "Resource management", "Change automation", "Continuous improvement"],
+            questions: [
+              "Have SLOs, monitoring, and capacity planning been tied together?",
+              "Are incidents driving preventive action rather than just one-off fixes?",
+              "Is automation reducing manual load while preserving change safety?"
+            ]
+          },
+          security: {
+            title: "Security, Privacy, and Compliance",
+            short: "Security by design, zero trust, shift-left controls, and shared responsibility.",
+            summary: "Google Cloud broadens security into privacy and compliance, emphasizing collaborative responsibility, zero trust, and security controls that start early in delivery.",
+            emphasis: 89,
+            keys: ["Security by design", "Zero trust", "Shift left", "Shared responsibility", "Compliance alignment"],
+            questions: [
+              "Are privacy and compliance treated as architecture inputs, not audit leftovers?",
+              "Can the workload prove access is continuously verified instead of assumed?",
+              "Are developers receiving security feedback early enough to change direction cheaply?"
+            ]
+          },
+          reliability: {
+            title: "Reliability",
+            short: "User goals, realistic targets, redundancy, observability, graceful degradation, testing, and postmortems.",
+            summary: "Google Cloud reliability guidance is especially rich around target-setting, horizontal scale, graceful degradation, recovery testing, and learning through postmortems.",
+            emphasis: 93,
+            keys: ["User goals", "Realistic targets", "Redundancy", "Observability", "Postmortems"],
+            questions: [
+              "Is reliability defined in terms users feel rather than only infrastructure uptime?",
+              "Can the system degrade gracefully instead of failing all at once?",
+              "Are postmortems producing architectural change, not just incident summaries?"
+            ]
+          },
+          performance: {
+            title: "Performance Optimization",
+            short: "Plan allocation, exploit elasticity, use modular design, and monitor continuously.",
+            summary: "Google Cloud ties performance to resource planning, elasticity, modular design, and an explicit loop of monitoring, reassessing, and tuning.",
+            emphasis: 81,
+            keys: ["Resource planning", "Elasticity", "Modularity", "Continuous monitoring", "Retuning"],
+            questions: [
+              "Does the architecture scale by adding the right resource, not just more of everything?",
+              "Have performance and cost been modeled together instead of separately?",
+              "Is the workload modular enough to isolate bottlenecks cleanly?"
+            ]
+          },
+          cost: {
+            title: "Cost Optimization",
+            short: "Business value alignment, cost-aware culture, usage optimization, and continuous FinOps-style review.",
+            summary: "Google Cloud cost guidance is explicit about tying spend to business value and building a culture where cost is visible enough to change behavior.",
+            emphasis: 84,
+            keys: ["Business value", "Cost awareness", "Usage optimization", "Continuous review", "FinOps"],
+            questions: [
+              "Can leaders explain why each major spend category exists in business terms?",
+              "Do engineers see cost signals close enough to their design choices to react?",
+              "Is optimization continuous, or only done after budget alarms fire?"
+            ]
+          },
+          sustainability: {
+            title: "Sustainability",
+            short: "Lower carbon footprint through efficient resources, smarter region choices, and workload-level emissions visibility.",
+            summary: "Google Cloud treats sustainability as part of the framework and also offers practical guidance around Carbon Footprint data, region carbon intensity, and reducing unnecessary compute or storage work.",
+            emphasis: 78,
+            keys: ["Carbon visibility", "Region choice", "Efficient resources", "Idle reduction", "Environmental tradeoffs"],
+            questions: [
+              "Would a lower-carbon region still satisfy latency, residency, and pricing constraints?",
+              "Can workload emissions be tied back to projects and services?",
+              "Which optimizations reduce both cost and carbon intensity at the same time?"
+            ]
+          }
+        }
+      }
+    };
+
+    const crosswalkRows = [
+      { id: "operational", label: "Operational Excellence", azure: "Operational Excellence", aws: "Operational Excellence", gcp: "Operational excellence", focus: "Standards, observability, incident discipline, and safe automation." },
+      { id: "security", label: "Security", azure: "Security", aws: "Security", gcp: "Security, privacy, and compliance", focus: "Identity, control planes, data protection, trust boundaries, and response readiness." },
+      { id: "reliability", label: "Reliability", azure: "Reliability", aws: "Reliability", gcp: "Reliability", focus: "Targets, redundancy, graceful degradation, recovery, and failure testing." },
+      { id: "performance", label: "Performance", azure: "Performance Efficiency", aws: "Performance Efficiency", gcp: "Performance optimization", focus: "Capacity, elasticity, service choice, load patterns, and continuous tuning." },
+      { id: "cost", label: "Cost", azure: "Cost Optimization", aws: "Cost Optimization", gcp: "Cost optimization", focus: "Business value, spend visibility, utilization, and FinOps-like feedback loops." },
+      { id: "sustainability", label: "Sustainability", azure: "Dedicated workload guidance", aws: "Sustainability pillar", gcp: "Sustainability pillar", focus: "Impact visibility, utilization, efficient services, and lower-footprint design choices." }
+    ];
+
+    const vendorMetrics = {
+      operational: { azure: 83, aws: 87, gcp: 86 },
+      security: { azure: 88, aws: 90, gcp: 89 },
+      reliability: { azure: 91, aws: 92, gcp: 93 },
+      performance: { azure: 79, aws: 84, gcp: 81 },
+      cost: { azure: 77, aws: 82, gcp: 84 },
+      sustainability: { azure: 61, aws: 74, gcp: 78 }
+    };
+
+    const scenarioData = {
+      startup: {
+        label: "Startup SaaS",
+        title: "Fast shipping without destroying tomorrow's reliability",
+        summary: "A fast-moving SaaS team usually feels operational excellence, performance, and cost pressure first. The trick is to build enough reliability and security scaffolding that speed does not quietly become fragility.",
+        caption: "The radar leans toward operations and performance, but reliability and security cannot be left as future clean-up work.",
+        weights: { operational: 88, security: 68, reliability: 78, performance: 84, cost: 81, sustainability: 54 },
+        checklist: [
+          { title: "Make releases boring", text: "Prefer small reversible deployments, strong telemetry, and simple rollback paths." },
+          { title: "Design for growth spikes", text: "Autoscaling, caching, and hot-path monitoring matter more than theoretical maximum scale." },
+          { title: "Watch unit economics early", text: "Right-size defaults and measure spend per tenant or transaction before growth hides the waste." }
+        ],
+        risks: [
+          { title: "Common failure mode", text: "Feature velocity outruns observability, so incidents become detective work." },
+          { title: "What to review", text: "Release automation, blast radius, on-call readiness, and spend visibility by customer or service." },
+          { title: "Best cross-cloud fit", text: "Any provider works here; the real differentiator is how fast the team can operationalize reviews." }
+        ]
+      },
+      regulated: {
+        label: "Regulated Platform",
+        title: "Compliance and recovery become first-order design inputs",
+        summary: "In regulated systems, security, reliability, and documented operating controls dominate. Architecture reviews need traceability, isolation, policy evidence, and realistic recovery goals that satisfy legal and audit pressure.",
+        caption: "Security and reliability pull the radar outward; operational controls support them with evidence, workflows, and repeatability.",
+        weights: { operational: 82, security: 95, reliability: 92, performance: 70, cost: 63, sustainability: 58 },
+        checklist: [
+          { title: "Define control boundaries", text: "Identity, segmentation, encryption, and auditability should be visible in the design itself." },
+          { title: "Prove recovery claims", text: "Test failover, backup restore, and data integrity paths instead of relying on policy statements." },
+          { title: "Tie reviews to evidence", text: "Postmortems, alerts, change records, and architecture docs should all support the same story." }
+        ],
+        risks: [
+          { title: "Common failure mode", text: "Teams meet checkbox compliance while leaving operational recovery weak in practice." },
+          { title: "What to review", text: "Zero-trust posture, recovery testing, traceability, data residency, and access lifecycle controls." },
+          { title: "Best cross-cloud fit", text: "Google Cloud perspectives and Azure workload guidance are especially useful when regulation shapes recovery and data handling." }
+        ]
+      },
+      global: {
+        label: "Global Product",
+        title: "Latency, resilience, and regional complexity all rise together",
+        summary: "Once a product spans regions, performance and reliability stop being local concerns. Region choice, traffic management, replication, and degraded-mode behavior become central design decisions with cost and sustainability consequences.",
+        caption: "Global workloads stretch performance and reliability together, then ask cost and sustainability to pay for the privilege.",
+        weights: { operational: 80, security: 75, reliability: 94, performance: 91, cost: 72, sustainability: 69 },
+        checklist: [
+          { title: "Pick realistic regional goals", text: "Chasing global perfection can create huge cost and operational drag with little user value." },
+          { title: "Design for graceful regional failure", text: "Traffic steering, failover, and data recovery need a practiced path, not only diagrams." },
+          { title: "Balance regions against impact", text: "Latency, residency, cost, and carbon intensity all influence where the workload should live." }
+        ],
+        risks: [
+          { title: "Common failure mode", text: "Multi-region ambition arrives before the workload has clear service objectives or rollback paths." },
+          { title: "What to review", text: "Replication models, regional failover, cache invalidation, network paths, and latency budgets." },
+          { title: "Best cross-cloud fit", text: "AWS and Google Cloud guidance stand out here because their docs strongly surface global elasticity and recovery strategy." }
+        ]
+      },
+      data: {
+        label: "Data / AI Platform",
+        title: "Elastic workloads with heavy cost, performance, and sustainability pressure",
+        summary: "Data and AI platforms mix batch peaks, spiky training or processing jobs, storage growth, and long feedback loops. Cost, performance, and sustainability need to be handled as a single conversation instead of separate dashboards.",
+        caption: "The radar pushes performance, cost, and sustainability upward because inefficient data paths are expensive in every sense.",
+        weights: { operational: 78, security: 74, reliability: 79, performance: 90, cost: 92, sustainability: 81 },
+        checklist: [
+          { title: "Optimize useful work", text: "Measure throughput, latency, and spend per pipeline, model, or query instead of only raw infrastructure metrics." },
+          { title: "Exploit elasticity deliberately", text: "Autoscaling, tiered storage, and managed services can cut idle capacity if the control loop is healthy." },
+          { title: "Treat waste as a design bug", text: "Unused storage, oversized clusters, and duplicate movement all hurt cost and carbon posture." }
+        ],
+        risks: [
+          { title: "Common failure mode", text: "Teams tune for raw speed while silently accepting runaway spend and weak operational discipline." },
+          { title: "What to review", text: "Scheduling, scaling, storage lifecycle, retry behavior, data retention, and unit-cost visibility." },
+          { title: "Best cross-cloud fit", text: "Google Cloud and AWS docs are especially strong on elasticity and managed-service-oriented performance thinking; Azure workload guidance helps when the platform must support broader enterprise processes." }
+        ]
+      }
+    };
+
+    const tradeoffData = {
+      multiRegion: {
+        label: "Multi-region resilience",
+        title: "More availability can mean more complexity, cost, and carbon",
+        summary: "Spreading a workload across regions usually helps resilience and sometimes latency, but it also increases operational coordination, replication cost, and infrastructure footprint.",
+        caption: "Positive bars show the qualities you usually gain; weaker bars show the qualities that need extra discipline to keep up.",
+        impacts: { operational: 66, security: 72, reliability: 96, performance: 81, cost: 54, sustainability: 51 },
+        moves: [
+          { title: "Use clear failover modes", text: "Active-active and active-passive models should be chosen from user-facing objectives, not from architectural fashion." },
+          { title: "Contain data movement", text: "Replication strategy matters as much as compute placement when cost and recovery are on the line." },
+          { title: "Practice regional drills", text: "A diagram is not a disaster recovery plan until the team can execute it cleanly." }
+        ],
+        guardrails: [
+          { title: "Guardrail", text: "Do not globalize every component. Some paths can stay local or degrade gracefully." },
+          { title: "Watch closely", text: "Hidden state, inconsistent caches, and surprise egress charges multiply fast in cross-region designs." },
+          { title: "Best question", text: "What business outcome becomes impossible if one region disappears for an hour, a day, or longer?" }
+        ]
+      },
+      zeroTrust: {
+        label: "Zero trust everywhere",
+        title: "Stronger security often raises operational and performance friction first",
+        summary: "Zero trust improves the security posture dramatically, but it also increases identity, policy, and observability work. Done well, that friction becomes healthy structure; done poorly, it becomes user pain and operator drift.",
+        caption: "Security rises highest, but operations and performance need intentional design work to stay healthy.",
+        impacts: { operational: 71, security: 98, reliability: 76, performance: 62, cost: 68, sustainability: 64 },
+        moves: [
+          { title: "Centralize identity logic", text: "Scattered authorization rules create inconsistency and brittle operations." },
+          { title: "Pair controls with observability", text: "Access denials and policy outcomes should be visible enough to debug without guesswork." },
+          { title: "Design user paths carefully", text: "Security checks should strengthen trust without turning everyday flows into molasses." }
+        ],
+        guardrails: [
+          { title: "Guardrail", text: "Measure user and operator friction, not only control coverage." },
+          { title: "Watch closely", text: "Emergency access and break-glass processes must exist before a real incident needs them." },
+          { title: "Best question", text: "Can the team explain which identity, network, and data controls defend each critical path?" }
+        ]
+      },
+      aggressiveAutoscaling: {
+        label: "Aggressive autoscaling",
+        title: "Performance and cost can both improve, but only if the signal loop is good",
+        summary: "Autoscaling looks like a free win until noisy signals, cold starts, or hidden state make the workload unstable. The review question is not whether to autoscale, but whether the workload is structured to benefit from it.",
+        caption: "Performance and cost both improve only when architecture, metrics, and state boundaries cooperate.",
+        impacts: { operational: 79, security: 67, reliability: 83, performance: 93, cost: 86, sustainability: 76 },
+        moves: [
+          { title: "Scale the right unit", text: "Stateless and partitioned components usually autoscale cleanly; state-heavy ones need more care." },
+          { title: "Tune signals, not vibes", text: "Queue depth, latency, throughput, and business KPIs matter more than arbitrary CPU thresholds alone." },
+          { title: "Match warmup to demand", text: "Cold starts, caches, and connection pools can erase the benefits of elastic capacity if ignored." }
+        ],
+        guardrails: [
+          { title: "Guardrail", text: "Keep a stable minimum floor for critical paths so scaling behavior does not become a new outage vector." },
+          { title: "Watch closely", text: "Batch bursts and retry storms can fool the scaling loop into expensive oscillation." },
+          { title: "Best question", text: "If demand doubles in five minutes, which component fails first and why?" }
+        ]
+      },
+      greenRegions: {
+        label: "Lower-carbon regions",
+        title: "Sustainability choices still answer to latency, regulation, and price",
+        summary: "Region selection can reduce carbon intensity, but it cannot ignore customer latency, data residency, or pricing. The point is not to optimize one number blindly; it is to make the tradeoff explicit and measured.",
+        caption: "Sustainability climbs, but reliability, performance, and compliance still set the boundaries for where the workload can run.",
+        impacts: { operational: 65, security: 74, reliability: 73, performance: 61, cost: 69, sustainability: 95 },
+        moves: [
+          { title: "Use region data, not assumptions", text: "Carbon intensity varies by region, and providers increasingly surface data for better choices." },
+          { title: "Separate hot and cold paths", text: "Not every component needs the same latency or residency profile." },
+          { title: "Pair with efficiency work", text: "Better region choice helps, but reducing useless compute and storage usually helps more." }
+        ],
+        guardrails: [
+          { title: "Guardrail", text: "Never move regulated or latency-sensitive paths without re-checking residency and user experience constraints." },
+          { title: "Watch closely", text: "Cross-region data transfer can erase environmental gains if replication becomes excessive." },
+          { title: "Best question", text: "Which paths can shift region or schedule without users noticing?" }
+        ]
+      }
+    };
+
+    const glossary = [
+      { term: "SLO", text: "A service level objective. The measurable target that says what good enough reliability or performance looks like." },
+      { term: "RTO", text: "Recovery time objective. The maximum acceptable duration to restore service after a failure." },
+      { term: "RPO", text: "Recovery point objective. The maximum acceptable amount of data loss measured in time." },
+      { term: "Blast Radius", text: "The scope of impact when a change or failure goes wrong. Smaller blast radius usually means safer iteration." },
+      { term: "Zero Trust", text: "A security posture that assumes no implicit trust and continuously verifies access to resources." },
+      { term: "CloudOps", text: "Operational practice for running cloud workloads with strong monitoring, incident handling, automation, and feedback loops." },
+      { term: "FinOps", text: "An operating model that brings engineering, finance, and product together to make cloud spend visible and actionable." },
+      { term: "Graceful Degradation", text: "Designing a system so noncritical functionality can weaken without taking the whole user experience down." },
+      { term: "Lens", text: "AWS terminology for framework extensions that adapt the core pillars to a specific domain or workload type." },
+      { term: "Perspective", text: "Google Cloud terminology for a cross-pillar view tailored to a technology domain or industry." },
+      { term: "Design Area", text: "Azure language for translating broad pillar principles into more concrete technical decision surfaces." },
+      { term: "Observability", text: "The ability to understand system behavior from telemetry such as logs, metrics, traces, and events." },
+      { term: "Mechanical Sympathy", text: "Choosing architecture and resource types that match how the workload actually behaves at runtime." },
+      { term: "Shared Responsibility", text: "The split between what the provider secures or operates and what the customer still owns." },
+      { term: "Postmortem", text: "A structured review after an incident to understand what failed, why, and what needs to change." }
+    ];
+
+    const state = { pillar: "reliability", vendor: "azure", scenario: "startup", tradeoff: "multiRegion" };
+
+    const pillarButtons = document.getElementById("pillarButtons");
+    const vendorButtons = document.getElementById("vendorButtons");
+    const scenarioButtons = document.getElementById("scenarioButtons");
+    const tradeoffButtons = document.getElementById("tradeoffButtons");
+    const glossaryInput = document.getElementById("glossaryInput");
+    const glossaryGrid = document.getElementById("glossaryGrid");
+
+    function initTheme() {
+      const button = document.querySelector("[data-theme-toggle]");
+      button.addEventListener("click", () => {
+        const next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("visualizerHubTheme", next); } catch (error) {}
+      });
+    }
+
+    function buildButtons(container, entries, activeKey, onSelect) {
+      container.innerHTML = entries.map((entry) => `
+        <button class="tab-btn ${entry.key === activeKey ? "active" : ""}" type="button" data-key="${entry.key}">${entry.label}</button>
+      `).join("");
+      container.querySelectorAll("[data-key]").forEach((button) => {
+        button.addEventListener("click", () => onSelect(button.getAttribute("data-key")));
+      });
+    }
+
+    function renderCrosswalk() {
+      const container = document.getElementById("crosswalkRows");
+      container.innerHTML = `
+        <div class="matrix-row matrix-header">
+          <div>Pillar</div><div>Azure</div><div>AWS</div><div>Google Cloud</div><div>Primary Review Angle</div>
+        </div>
+      ` + crosswalkRows.map((row) => `
+        <div class="matrix-row">
+          <div class="matrix-cell"><strong>${row.label}</strong>${row.id === "sustainability" ? "Visibility differs most here." : "Shared language, different packaging."}</div>
+          <div class="matrix-cell">${row.azure}</div>
+          <div class="matrix-cell">${row.aws}</div>
+          <div class="matrix-cell">${row.gcp}</div>
+          <div class="matrix-cell">${row.focus}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderPillar() {
+      const pillar = state.pillar;
+      const azure = frameworks.azure.pillars[pillar];
+      const aws = frameworks.aws.pillars[pillar];
+      const gcp = frameworks.gcp.pillars[pillar];
+      const title = crosswalkRows.find((row) => row.id === pillar).label;
+      const lead = {
+        operational: "Operational work is where architecture becomes habit. All three clouds push toward automation, observability, and safer change, but they emphasize different supporting systems.",
+        security: "Security reviews become stronger when identity, trust boundaries, traceability, and incident preparedness are designed together instead of in separate teams.",
+        reliability: "Reliability is the clearest cross-cloud overlap: define targets, design redundancy intentionally, test recovery, and learn from failure.",
+        performance: "Performance guidance is never only about speed. It is about matching service choice, elasticity, and workload shape to what users actually need.",
+        cost: "Cost is not a finance-only topic. It is architecture, product prioritization, and operating discipline translated into resource decisions.",
+        sustainability: "Sustainability becomes real when it moves from vague intent into workload-level decisions about regions, utilization, data movement, and hardware or service choice."
+      }[pillar];
+
+      document.getElementById("pillarLabel").textContent = title;
+      document.getElementById("pillarTitle").textContent = `${title} Across Clouds`;
+      document.getElementById("pillarLead").textContent = lead;
+      document.getElementById("pillarCaption").textContent = pillar === "sustainability"
+        ? "Azure is shown as connected through workload guidance rather than as a peer core pillar."
+        : "Each node shows how strongly the selected pillar is surfaced in the provider's framework structure and supporting artifacts.";
+
+      document.getElementById("pillarMeta").innerHTML = [
+        `Azure: ${azure.short}`,
+        `AWS: ${aws.short}`,
+        `Google Cloud: ${gcp.short}`
+      ].map((item) => `<span class="meta-pill">${item}</span>`).join("");
+
+      document.getElementById("pillarBars").innerHTML = [
+        { label: "Azure emphasis", value: azure.emphasis, color: frameworks.azure.color },
+        { label: "AWS emphasis", value: aws.emphasis, color: frameworks.aws.color },
+        { label: "Google Cloud emphasis", value: gcp.emphasis, color: frameworks.gcp.color }
+      ].map((item) => `
+        <div class="bar-item">
+          <span><strong>${item.label}</strong><em>${item.value}/100</em></span>
+          <div class="bar-track"><div class="bar-fill" style="width:${item.value}%; background:linear-gradient(135deg, ${item.color}, color-mix(in srgb, ${item.color} 55%, #ffffff));"></div></div>
+        </div>
+      `).join("");
+
+      document.getElementById("pillarVendorCards").innerHTML = [
+        { data: azure, vendor: frameworks.azure },
+        { data: aws, vendor: frameworks.aws },
+        { data: gcp, vendor: frameworks.gcp }
+      ].map(({ data, vendor }) => `
+        <article class="mini-card">
+          <div class="vendor-badge"><span style="background:${vendor.color}"></span>${vendor.label}</div>
+          <h4>${data.title}</h4>
+          <p>${data.summary}</p>
+          <div class="chip-row" style="margin-top:12px;">${data.keys.map((key) => `<span class="meta-pill">${key}</span>`).join("")}</div>
+        </article>
+      `).join("");
+
+      document.getElementById("pillarQuestions").innerHTML = [
+        { vendor: frameworks.azure, questions: azure.questions },
+        { vendor: frameworks.aws, questions: aws.questions },
+        { vendor: frameworks.gcp, questions: gcp.questions }
+      ].map(({ vendor, questions }) => `
+        <article class="info-card">
+          <div class="vendor-badge"><span style="background:${vendor.color}"></span>${vendor.label}</div>
+          <h4>Review prompts</h4>
+          <ul class="question-list">${questions.map((question) => `<li>${question}</li>`).join("")}</ul>
+        </article>
+      `).join("");
+    }
+
+    function renderVendor() {
+      const vendor = frameworks[state.vendor];
+      document.getElementById("vendorLabel").textContent = vendor.badge;
+      document.getElementById("vendorTitle").textContent = `${vendor.label} Playbook`;
+      document.getElementById("vendorLead").textContent = vendor.summary;
+      document.getElementById("vendorCaption").textContent = vendor.caption;
+      document.getElementById("vendorArtifacts").innerHTML = vendor.artifacts.map((item) => `
+        <article class="mini-card"><h4>${item.title}</h4><p>${item.text}</p></article>
+      `).join("");
+      document.getElementById("vendorRoute").innerHTML = vendor.route.map((item) => `
+        <article class="timeline-card"><h4>${item.title}</h4><div class="timeline-step"><p>${item.text}</p></div></article>
+      `).join("");
+    }
+
+    function renderScenario() {
+      const scenario = scenarioData[state.scenario];
+      document.getElementById("scenarioLabel").textContent = scenario.label;
+      document.getElementById("scenarioTitle").textContent = scenario.title;
+      document.getElementById("scenarioLead").textContent = scenario.summary;
+      document.getElementById("scenarioCaption").textContent = scenario.caption;
+      const order = ["operational", "security", "reliability", "performance", "cost", "sustainability"];
+      document.getElementById("scenarioBars").innerHTML = order.map((key) => `
+        <div class="bar-item">
+          <span><strong>${crosswalkRows.find((row) => row.id === key).label}</strong><em>${scenario.weights[key]}/100</em></span>
+          <div class="bar-track"><div class="bar-fill" style="width:${scenario.weights[key]}%;"></div></div>
+        </div>
+      `).join("");
+      document.getElementById("scenarioChecklist").innerHTML = scenario.checklist.map((item) => `
+        <article class="timeline-card"><h4>${item.title}</h4><div class="timeline-step"><p>${item.text}</p></div></article>
+      `).join("");
+      document.getElementById("scenarioRisks").innerHTML = scenario.risks.map((item) => `
+        <article class="info-card"><h4>${item.title}</h4><p>${item.text}</p></article>
+      `).join("");
+    }
+
+    function renderTradeoff() {
+      const tradeoff = tradeoffData[state.tradeoff];
+      document.getElementById("tradeoffLabel").textContent = tradeoff.label;
+      document.getElementById("tradeoffTitle").textContent = tradeoff.title;
+      document.getElementById("tradeoffLead").textContent = tradeoff.summary;
+      document.getElementById("tradeoffCaption").textContent = tradeoff.caption;
+      const order = ["operational", "security", "reliability", "performance", "cost", "sustainability"];
+      document.getElementById("tradeoffBars").innerHTML = order.map((key) => `
+        <div class="bar-item">
+          <span><strong>${crosswalkRows.find((row) => row.id === key).label}</strong><em>${tradeoff.impacts[key]}/100</em></span>
+          <div class="bar-track"><div class="bar-fill" style="width:${tradeoff.impacts[key]}%;"></div></div>
+        </div>
+      `).join("");
+      document.getElementById("tradeoffMoves").innerHTML = tradeoff.moves.map((item) => `
+        <article class="timeline-card"><h4>${item.title}</h4><div class="timeline-step"><p>${item.text}</p></div></article>
+      `).join("");
+      document.getElementById("tradeoffGuardrails").innerHTML = tradeoff.guardrails.map((item) => `
+        <article class="info-card"><h4>${item.title}</h4><p>${item.text}</p></article>
+      `).join("");
+    }
+
+    function renderGlossary() {
+      const query = glossaryInput.value.trim().toLowerCase();
+      const filtered = glossary.filter((item) => !query || item.term.toLowerCase().includes(query) || item.text.toLowerCase().includes(query));
+      glossaryGrid.innerHTML = filtered.map((item) => `
+        <article class="glossary-card"><h4>${item.term}</h4><p>${item.text}</p></article>
+      `).join("");
+      if (!filtered.length) {
+        glossaryGrid.innerHTML = `<article class="glossary-card"><h4>No match</h4><p>Try searching with a shorter term or a nearby concept like “SLO”, “identity”, or “FinOps”.</p></article>`;
+      }
+    }
+
+    function css(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function rgba(hex, alpha) {
+      const clean = hex.replace("#", "");
+      const full = clean.length === 3 ? clean.split("").map((char) => char + char).join("") : clean;
+      const int = parseInt(full, 16);
+      return `rgba(${(int >> 16) & 255}, ${(int >> 8) & 255}, ${int & 255}, ${alpha})`;
+    }
+
+    function resizeCanvas(canvas, height) {
+      const ratio = Math.max(1, window.devicePixelRatio || 1);
+      const rectWidth = Math.max(canvas.clientWidth || 920, 320);
+      const width = Math.floor(rectWidth * ratio);
+      const scaledHeight = Math.floor(height * ratio);
+      if (canvas.width !== width || canvas.height !== scaledHeight) {
+        canvas.width = width;
+        canvas.height = scaledHeight;
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return { ctx, width: rectWidth, height };
+    }
+
+    function rr(ctx, x, y, w, h, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke(); }
+    }
+
+    function circle(ctx, x, y, r, fill, stroke) {
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1.2; ctx.stroke(); }
+    }
+
+    function line(ctx, x1, y1, x2, y2, color, width, dash) {
+      ctx.beginPath();
+      ctx.setLineDash(dash || []);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width || 1.6;
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function text(ctx, label, x, y, size, color, align) {
+      ctx.fillStyle = color;
+      ctx.font = `${size}px Space Grotesk`;
+      ctx.textAlign = align || "center";
+      ctx.fillText(label, x, y);
+    }
+
+    function pulse(ctx, x, y, base, color, time) {
+      const radius = base + Math.sin(time) * 2.6 + 3;
+      circle(ctx, x, y, radius, rgba(color, 0.14), rgba(color, 0.34));
+      circle(ctx, x, y, base, color);
+    }
+
+    function node(ctx, x, y, w, h, color, title, lines) {
+      rr(ctx, x, y, w, h, 18, rgba(color, 0.11), rgba(color, 0.62));
+      ctx.fillStyle = css("--text");
+      ctx.font = "700 14px Space Grotesk";
+      ctx.textAlign = "left";
+      ctx.fillText(title, x + 14, y + 24);
+      ctx.fillStyle = css("--muted");
+      ctx.font = "12px IBM Plex Mono";
+      lines.slice(0, 2).forEach((lineText, index) => {
+        ctx.fillText(lineText, x + 14, y + 44 + index * 16);
+      });
+    }
+
+    function drawFrameworkMap(time) {
+      const { ctx, width, height } = resizeCanvas(document.getElementById("frameworkCanvas"), 430);
+      ctx.clearRect(0, 0, width, height);
+      rr(ctx, 18, 18, width - 36, height - 36, 24, rgba(css("--accent"), 0.04), css("--border"));
+      const centerX = width / 2;
+      const centerY = height / 2 - 12;
+      const radius = Math.min(width, height) * 0.28;
+      const pillars = ["operational", "security", "reliability", "performance", "cost", "sustainability"];
+      const positions = pillars.map((pillar, index) => {
+        const angle = (-Math.PI / 2) + (Math.PI * 2 * index) / pillars.length + time / 9000;
+        return { pillar, x: centerX + Math.cos(angle) * radius, y: centerY + Math.sin(angle) * radius };
+      });
+      circle(ctx, centerX, centerY, 58, rgba(css("--accent"), 0.12), rgba(css("--accent"), 0.5));
+      text(ctx, "Quality", centerX, centerY - 4, 18, css("--text"));
+      text(ctx, "attributes", centerX, centerY + 18, 12, css("--muted"));
+      const vendorNodes = [
+        { x: width * 0.2, y: height - 92, color: frameworks.azure.color, label: "Azure", guide: true },
+        { x: width * 0.5, y: height - 70, color: frameworks.aws.color, label: "AWS", guide: false },
+        { x: width * 0.8, y: height - 92, color: frameworks.gcp.color, label: "Google Cloud", guide: false }
+      ];
+      positions.forEach((item) => {
+        line(ctx, centerX, centerY, item.x, item.y, rgba(css("--accent"), 0.12), 1.2);
+        circle(ctx, item.x, item.y, item.pillar === "sustainability" ? 26 : 24, rgba(css("--surface-3"), 0.98), item.pillar === "sustainability" ? rgba(css("--accent-3"), 0.7) : rgba(css("--accent"), 0.56));
+        text(ctx, crosswalkRows.find((row) => row.id === item.pillar).label.replace("Operational Excellence", "Ops"), item.x, item.y + 4, item.pillar === "sustainability" ? 11 : 12, css("--text"));
+        pulse(ctx, item.x, item.y, 2.6, item.pillar === "sustainability" ? css("--accent-3") : css("--accent"), time / 420 + item.x / 120);
+      });
+      vendorNodes.forEach((vendor) => {
+        circle(ctx, vendor.x, vendor.y, 32, rgba(vendor.color, 0.14), rgba(vendor.color, 0.78));
+        text(ctx, vendor.label, vendor.x, vendor.y + 5, vendor.label.length > 5 ? 12 : 13, css("--text"));
+        positions.forEach((item) => {
+          const dashed = vendor.guide && item.pillar === "sustainability";
+          line(ctx, vendor.x, vendor.y - 30, item.x, item.y + 24, rgba(vendor.color, dashed ? 0.38 : 0.56), dashed ? 1.4 : 2, dashed ? [8, 6] : []);
+        });
+      });
+    }
+
+    function drawCrosswalk(time) {
+      const { ctx, width, height } = resizeCanvas(document.getElementById("crosswalkCanvas"), 430);
+      ctx.clearRect(0, 0, width, height);
+      rr(ctx, 18, 18, width - 36, height - 36, 24, rgba(css("--accent-2"), 0.04), css("--border"));
+      const cols = [
+        { label: "Azure", x: width * 0.22, color: frameworks.azure.color },
+        { label: "AWS", x: width * 0.5, color: frameworks.aws.color },
+        { label: "Google Cloud", x: width * 0.78, color: frameworks.gcp.color }
+      ];
+      cols.forEach((col) => text(ctx, col.label, col.x, 42, 14, css("--text")));
+      crosswalkRows.forEach((row, rowIndex) => {
+        const y = 92 + rowIndex * 52;
+        text(ctx, row.label, 74, y + 8, 12, css("--muted"), "left");
+        cols.forEach((col) => {
+          const isAzureGuide = col.label === "Azure" && row.id === "sustainability";
+          rr(ctx, col.x - 52, y - 14, 104, 28, 14, rgba(col.color, isAzureGuide ? 0.06 : 0.14), rgba(col.color, isAzureGuide ? 0.42 : 0.72));
+          if (isAzureGuide) {
+            line(ctx, col.x - 36, y, col.x + 36, y, rgba(col.color, 0.8), 1.6, [6, 5]);
+            text(ctx, "guide", col.x, y + 5, 11, css("--text"));
+          } else {
+            rr(ctx, col.x - 52, y - 14, 104, 28, 14, rgba(col.color, 0.08 + ((Math.sin(time / 520 + rowIndex + col.x / 70) + 1) / 2) * 0.12), null);
+            text(ctx, "core", col.x, y + 5, 11, css("--text"));
+          }
+        });
+      });
+    }
+
+    function drawPillar(time) {
+      const { ctx, width, height } = resizeCanvas(document.getElementById("pillarCanvas"), 430);
+      ctx.clearRect(0, 0, width, height);
+      rr(ctx, 18, 18, width - 36, height - 36, 24, rgba(css("--accent"), 0.04), css("--border"));
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const pillar = state.pillar;
+      const centerColor = pillar === "sustainability" ? css("--accent-3") : css("--accent");
+      circle(ctx, centerX, centerY, 70, rgba(centerColor, 0.14), rgba(centerColor, 0.68));
+      text(ctx, crosswalkRows.find((row) => row.id === pillar).label, centerX, centerY - 4, 18, css("--text"));
+      text(ctx, "cross-cloud view", centerX, centerY + 18, 12, css("--muted"));
+      [
+        { label: "Azure", x: width * 0.22, y: height * 0.3, color: frameworks.azure.color, value: vendorMetrics[pillar].azure, guide: pillar === "sustainability" },
+        { label: "AWS", x: width * 0.74, y: height * 0.26, color: frameworks.aws.color, value: vendorMetrics[pillar].aws },
+        { label: "Google Cloud", x: width * 0.62, y: height * 0.72, color: frameworks.gcp.color, value: vendorMetrics[pillar].gcp }
+      ].forEach((item) => {
+        line(ctx, centerX, centerY, item.x, item.y, rgba(item.color, item.guide ? 0.34 : 0.6), item.guide ? 1.8 : 2.4, item.guide ? [8, 6] : []);
+        circle(ctx, item.x, item.y, 42, rgba(item.color, 0.12), rgba(item.color, 0.8));
+        text(ctx, item.label, item.x, item.y - 4, item.label.length > 5 ? 12 : 13, css("--text"));
+        text(ctx, `${item.value}/100`, item.x, item.y + 17, 11, css("--muted"));
+        pulse(ctx, item.x, item.y, 3, item.color, time / 460 + item.value / 40);
+      });
+    }
+
+    function drawVendor() {
+      const { ctx, width, height } = resizeCanvas(document.getElementById("vendorCanvas"), 430);
+      ctx.clearRect(0, 0, width, height);
+      rr(ctx, 18, 18, width - 36, height - 36, 24, rgba(css("--accent-2"), 0.04), css("--border"));
+      const vendor = frameworks[state.vendor];
+      const color = vendor.color;
+      const nodes = [
+        { x: 70, y: 180, w: 150, h: 74, title: "Framework", lines: ["pillars", state.vendor === "azure" ? "five core" : "base structure"] },
+        { x: 280, y: 86, w: 170, h: 74, title: "Review", lines: [state.vendor === "aws" ? "Tool + questions" : "assessment + posture", "repeat often"] },
+        { x: 280, y: 274, w: 170, h: 74, title: "Implementation", lines: [state.vendor === "azure" ? "design guides" : state.vendor === "aws" ? "whitepapers + labs" : "principles + guides", "service choices"] },
+        { x: 520, y: 86, w: 170, h: 74, title: "Extensions", lines: [state.vendor === "azure" ? "workloads" : state.vendor === "aws" ? "Lenses" : "perspectives", "domain context"] },
+        { x: 520, y: 274, w: 170, h: 74, title: "Operate", lines: ["feedback loops", "improve posture"] },
+        { x: 760, y: 180, w: 120, h: 74, title: "Outcome", lines: ["measured", "tradeoffs"] }
+      ];
+      nodes.forEach((item) => node(ctx, item.x, item.y, item.w, item.h, color, item.title, item.lines));
+      line(ctx, 220, 217, 280, 123, rgba(color, 0.78), 2.4);
+      line(ctx, 220, 217, 280, 311, rgba(color, 0.78), 2.4);
+      line(ctx, 450, 123, 520, 123, rgba(color, 0.78), 2.4);
+      line(ctx, 450, 311, 520, 311, rgba(color, 0.78), 2.4);
+      line(ctx, 690, 123, 760, 217, rgba(color, 0.78), 2.4);
+      line(ctx, 690, 311, 760, 217, rgba(color, 0.78), 2.4);
+      text(ctx, vendor.label, width / 2, 42, 18, css("--text"));
+    }
+
+    function drawRadar(ctx, width, height, values, color) {
+      const cx = width / 2;
+      const cy = height / 2 + 8;
+      const axes = ["operational", "security", "reliability", "performance", "cost", "sustainability"];
+      ctx.save();
+      ctx.translate(cx, cy);
+      [48, 88, 128, 168].forEach((r) => {
+        ctx.beginPath();
+        axes.forEach((_, index) => {
+          const angle = (-Math.PI / 2) + (Math.PI * 2 * index) / axes.length;
+          const x = Math.cos(angle) * r;
+          const y = Math.sin(angle) * r;
+          index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.closePath();
+        ctx.strokeStyle = css("--divider");
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      });
+      axes.forEach((axis, index) => {
+        const angle = (-Math.PI / 2) + (Math.PI * 2 * index) / axes.length;
+        line(ctx, 0, 0, Math.cos(angle) * 176, Math.sin(angle) * 176, css("--divider"), 1.1);
+        text(ctx, crosswalkRows.find((row) => row.id === axis).label.replace("Optimization", "").replace("Efficiency", ""), Math.cos(angle) * 198, Math.sin(angle) * 198, 11, css("--text"));
+      });
+      ctx.beginPath();
+      axes.forEach((axis, index) => {
+        const angle = (-Math.PI / 2) + (Math.PI * 2 * index) / axes.length;
+        const radius = (values[axis] / 100) * 168;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.closePath();
+      ctx.fillStyle = rgba(color, 0.18);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.4;
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawReview() {
+      const { ctx, width, height } = resizeCanvas(document.getElementById("reviewCanvas"), 430);
+      ctx.clearRect(0, 0, width, height);
+      rr(ctx, 18, 18, width - 36, height - 36, 24, rgba(css("--accent"), 0.04), css("--border"));
+      drawRadar(ctx, width, height, scenarioData[state.scenario].weights, css("--accent"));
+      text(ctx, scenarioData[state.scenario].label, width / 2, 42, 18, css("--text"));
+    }
+
+    function drawTradeoff() {
+      const { ctx, width, height } = resizeCanvas(document.getElementById("tradeoffCanvas"), 430);
+      ctx.clearRect(0, 0, width, height);
+      rr(ctx, 18, 18, width - 36, height - 36, 24, rgba(css("--danger"), 0.04), css("--border"));
+      const tradeoff = tradeoffData[state.tradeoff];
+      const order = ["operational", "security", "reliability", "performance", "cost", "sustainability"];
+      text(ctx, tradeoff.label, width / 2, 42, 18, css("--text"));
+      order.forEach((key, index) => {
+        const y = 92 + index * 50;
+        const value = tradeoff.impacts[key];
+        const barWidth = (width - 280) * (value / 100);
+        text(ctx, crosswalkRows.find((row) => row.id === key).label, 40, y + 12, 12, css("--muted"), "left");
+        rr(ctx, 220, y, width - 280, 24, 12, rgba(css("--surface-3"), 0.9), css("--divider"));
+        rr(ctx, 220, y, barWidth, 24, 12, rgba(css("--danger"), 0.82), null);
+        text(ctx, `${value}/100`, width - 48, y + 16, 11, css("--text"));
+      });
+    }
+
+    function renderAll() {
+      renderCrosswalk();
+      renderPillar();
+      renderVendor();
+      renderScenario();
+      renderTradeoff();
+      renderGlossary();
+      buildButtons(pillarButtons, crosswalkRows.map((row) => ({ key: row.id, label: row.label.replace(" Optimization", "").replace(" Efficiency", "") })), state.pillar, (key) => { state.pillar = key; renderAll(); });
+      buildButtons(vendorButtons, Object.entries(frameworks).map(([key, value]) => ({ key, label: value.label })), state.vendor, (key) => { state.vendor = key; renderAll(); });
+      buildButtons(scenarioButtons, Object.entries(scenarioData).map(([key, value]) => ({ key, label: value.label })), state.scenario, (key) => { state.scenario = key; renderAll(); });
+      buildButtons(tradeoffButtons, Object.entries(tradeoffData).map(([key, value]) => ({ key, label: value.label })), state.tradeoff, (key) => { state.tradeoff = key; renderAll(); });
+    }
+
+    function animate(time) {
+      drawFrameworkMap(time);
+      drawCrosswalk(time);
+      drawPillar(time);
+      drawVendor();
+      drawReview();
+      drawTradeoff();
+      requestAnimationFrame(animate);
+    }
+
+    glossaryInput.addEventListener("input", renderGlossary);
+    window.addEventListener("resize", renderAll);
+    initTheme();
+    renderAll();
+    requestAnimationFrame(animate);
+  </script></body></html>

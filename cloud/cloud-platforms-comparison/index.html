@@ -1,0 +1,1211 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><script src="../../theme-sync.js"></script><script src="../../visualizer-shell.js"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cloud Platforms Comparison Atlas</title><meta name="description" content="Interactive comparison atlas for AWS, Microsoft Azure, and Google Cloud across service lenses, workload archetypes, and official reference paths."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"><style>
+    :root {
+      --font-display: "Space Grotesk", "Segoe UI Variable", "Segoe UI", sans-serif;
+      --font-mono: "IBM Plex Mono", Consolas, monospace;
+      --shadow-sm: 0 14px 34px rgba(8, 16, 34, 0.09);
+      --transition: 220ms cubic-bezier(0.2, 1, 0.3, 1);
+      --accent: #2563eb;
+      --aws: #f59e0b;
+      --azure: #0ea5e9;
+      --gcp: #22c55e;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f8ff;
+      --bg-2: #eef4ff;
+      --surface: rgba(255, 255, 255, 0.9);
+      --surface-strong: #ffffff;
+      --surface-soft: rgba(246, 249, 255, 0.94);
+      --border: rgba(15, 23, 42, 0.08);
+      --border-strong: rgba(15, 23, 42, 0.14);
+      --text: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --hero-a: rgba(37, 99, 235, 0.12);
+      --hero-b: rgba(14, 165, 233, 0.1);
+      --hero-c: rgba(34, 197, 94, 0.08);
+    }
+
+    [data-theme="dark"] {
+      --bg: #07111f;
+      --bg-2: #0d1727;
+      --surface: rgba(8, 19, 35, 0.88);
+      --surface-strong: #0f1b2d;
+      --surface-soft: rgba(12, 26, 43, 0.94);
+      --border: rgba(148, 163, 184, 0.12);
+      --border-strong: rgba(148, 163, 184, 0.24);
+      --text: #e5eefc;
+      --text-muted: #b0c1da;
+      --text-soft: #7f92ad;
+      --hero-a: rgba(37, 99, 235, 0.16);
+      --hero-b: rgba(14, 165, 233, 0.12);
+      --hero-c: rgba(34, 197, 94, 0.1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-display);
+      color: var(--text);
+      line-height: 1.6;
+      background:
+        radial-gradient(circle at top left, var(--hero-a), transparent 34%),
+        radial-gradient(circle at top right, var(--hero-b), transparent 30%),
+        radial-gradient(circle at 72% 140px, var(--hero-c), transparent 24%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+
+    .shell {
+      width: min(1440px, calc(100vw - 28px));
+      margin: 0 auto;
+      padding: 18px 0 48px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 10px;
+      z-index: 30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(18px);
+      background: color-mix(in srgb, var(--surface) 86%, transparent);
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      background: linear-gradient(145deg, #1d4ed8, #0ea5e9);
+      box-shadow: 0 18px 36px rgba(37, 99, 235, 0.28);
+    }
+
+    .brand-title {
+      font-size: clamp(1rem, 0.92rem + 0.4vw, 1.24rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-subtitle,
+    .section-lead,
+    .provider-copy,
+    .lens-copy,
+    .note,
+    .matrix-caption,
+    .reference-copy,
+    .scenario-copy,
+    .footer-note {
+      color: var(--text-muted);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .jump-link,
+    .lens-button,
+    .reference-link {
+      transition:
+        transform var(--transition),
+        border-color var(--transition),
+        background var(--transition),
+        color var(--transition);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 22px;
+      margin-bottom: 22px;
+    }
+
+    .hero-copy,
+    .hero-visual,
+    .provider-grid,
+    .lens-studio,
+    .matrix-panel,
+    .scenario-panel,
+    .reference-panel {
+      padding: 22px;
+    }
+
+    .hero-copy {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 88%, white), color-mix(in srgb, var(--surface) 98%, transparent));
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      right: -70px;
+      bottom: -120px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.16), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow,
+    .provider-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(37, 99, 235, 0.22);
+      background: rgba(37, 99, 235, 0.1);
+      color: var(--accent);
+      font-size: 0.76rem;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1, h2, h3 { margin: 0; letter-spacing: -0.04em; }
+    h1 {
+      margin-top: 14px;
+      font-size: clamp(2.2rem, 1.7rem + 1.9vw, 4rem);
+      line-height: 0.98;
+      max-width: 12ch;
+    }
+
+    .hero-actions,
+    .summary-grid,
+    .provider-cards,
+    .signal-grid,
+    .lens-controls,
+    .lens-grid,
+    .matrix-grid,
+    .scenario-grid,
+    .reference-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero-actions {
+      grid-template-columns: repeat(2, minmax(0, max-content));
+      margin-top: 18px;
+    }
+
+    .jump-link,
+    .lens-button,
+    .reference-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--surface-strong);
+      color: var(--text-muted);
+    }
+
+    .jump-link.is-primary,
+    .lens-button.is-active {
+      background: rgba(37, 99, 235, 0.12);
+      border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+      color: var(--text);
+      box-shadow: 0 16px 32px rgba(37, 99, 235, 0.12);
+    }
+
+    .summary-grid,
+    .provider-cards,
+    .reference-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .signal-grid,
+    .lens-grid,
+    .scenario-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .summary-card,
+    .provider-card,
+    .signal-card,
+    .lens-card,
+    .matrix-card,
+    .scenario-card,
+    .reference-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
+    }
+
+    .summary-value {
+      font-size: clamp(1.4rem, 1.08rem + 0.8vw, 1.95rem);
+      font-weight: 700;
+    }
+
+    .summary-label,
+    .matrix-kicker {
+      color: var(--text-soft);
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+    }
+
+    .hero-visual {
+      min-height: 420px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 88%, transparent), color-mix(in srgb, var(--surface-soft) 94%, transparent));
+    }
+
+    .provider-cards,
+    .scenario-grid {
+      margin-top: 14px;
+    }
+
+    .provider-card {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      gap: 12px;
+    }
+
+    .provider-card::after {
+      content: "";
+      position: absolute;
+      right: -36px;
+      bottom: -44px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--provider-color) 22%, transparent), transparent 68%);
+      pointer-events: none;
+    }
+
+    .provider-badge {
+      width: fit-content;
+      color: var(--provider-color, var(--accent));
+      border-color: color-mix(in srgb, var(--provider-color, var(--accent)) 28%, transparent);
+      background: color-mix(in srgb, var(--provider-color, var(--accent)) 10%, transparent);
+    }
+
+    .provider-strengths,
+    .reference-list,
+    .scenario-picks {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+      color: var(--text-muted);
+    }
+
+    .lens-layout {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 14px;
+    }
+
+    .lens-controls {
+      align-content: start;
+    }
+
+    .lens-button {
+      width: 100%;
+      text-align: left;
+      justify-content: flex-start;
+    }
+
+    .lens-card {
+      display: grid;
+      gap: 10px;
+      min-height: 100%;
+    }
+
+    .lens-service {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .fit-bar {
+      height: 8px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface-soft) 78%, transparent);
+      overflow: hidden;
+    }
+
+    .fit-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--provider-color) 75%, white), var(--provider-color));
+      animation: fillIn 900ms ease;
+    }
+
+    .matrix-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .matrix-card strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 1rem;
+    }
+
+    .scenario-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .reference-link {
+      justify-content: flex-start;
+      width: fit-content;
+      margin-top: 6px;
+      color: var(--accent);
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      font-size: 0.88rem;
+    }
+
+    @keyframes fillIn {
+      from { width: 0; }
+    }
+
+    @media (max-width: 1180px) {
+      .hero,
+      .lens-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid,
+      .provider-cards,
+      .signal-grid,
+      .lens-grid,
+      .matrix-grid,
+      .scenario-grid,
+      .reference-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .summary-grid,
+      .provider-cards,
+      .signal-grid,
+      .lens-grid,
+      .matrix-grid,
+      .scenario-grid,
+      .reference-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .shell {
+        width: min(100vw - 16px, 100%);
+        padding-top: 10px;
+      }
+
+      .panel,
+      .topbar {
+        border-radius: 18px;
+      }
+
+      .hero-copy,
+      .hero-visual,
+      .provider-grid,
+      .lens-studio,
+      .matrix-panel,
+      .scenario-panel,
+      .reference-panel {
+        padding: 18px;
+      }
+
+      .hero-visual {
+        min-height: 300px;
+      }
+
+      h1 {
+        max-width: none;
+      }
+    }
+  </style></head><body><div class="shell"><header class="topbar panel"><div class="brand"><div class="brand-mark">CP</div><div><div class="brand-title">Cloud Platforms Comparison Atlas</div><div class="brand-subtitle">AWS, Microsoft Azure, and Google Cloud in one design map</div></div></div><div class="toolbar"><a class="jump-link is-primary" href="#lensStudio">Open comparison studio</a><a class="jump-link" href="#references">Official references</a></div></header><section class="hero"><article class="hero-copy panel"><span class="eyebrow">Cloud</span><h1>Compare the three major cloud platforms with a design lens.</h1><p class="section-lead"> This atlas is built for architecture decisions rather than marketing claims. It crosswalks AWS, Microsoft Azure, and Google Cloud across compute, storage, containers, serverless, data, messaging, AI, networking, security, observability, and hybrid operating models. </p><div class="hero-actions"><a class="jump-link is-primary" href="#lensStudio">Choose a service lens</a><a class="jump-link" href="#matrixPanel">See the crosswalk matrix</a></div><div class="summary-grid" id="summaryGrid"></div></article><aside class="hero-visual panel"><h2>How to read this atlas</h2><p class="section-lead"> The comparison notes are a synthesis of official product and architecture pages. Service names and links come from the vendors; the workload guidance is an engineering inference layered on top. </p><div class="signal-grid" id="signalGrid"></div></aside></section><section class="provider-grid panel"><h2>Provider Profiles</h2><p class="section-lead"> These profile cards are directional, not benchmark scores. They capture the platform shape architects commonly feel when moving from core services into day-two operations. </p><div class="provider-cards" id="providerCards"></div></section><section class="lens-studio panel" id="lensStudio"><h2>Comparison Studio</h2><p class="section-lead"> Pick a decision lens to compare the nearest AWS, Azure, and Google Cloud service families side by side. The fit notes are inference; the linked service pages are official. </p><div class="lens-layout"><div class="lens-controls" id="lensControls"></div><div><article class="matrix-card" id="lensIntro"></article><div class="lens-grid" id="lensGrid"></div></div></div></section><section class="matrix-panel panel" id="matrixPanel"><h2>Crosswalk Matrix</h2><p class="section-lead"> This is the quickest provider-to-provider translation sheet for common architecture decisions. </p><div class="matrix-grid" id="matrixGrid"></div><p class="matrix-caption"> Inference: the matrix points to the closest mainstream service equivalents, not identical feature parity. </p></section><section class="scenario-panel panel"><h2>Workload Archetypes</h2><p class="section-lead"> These recommendations are design synthesis, not vendor rankings. They highlight where each cloud often feels easiest to justify or operate for a given workload shape. </p><div class="scenario-grid" id="scenarioGrid"></div></section><section class="reference-panel panel" id="references"><h2>Official References</h2><p class="section-lead"> The active lens below fans out into official product and documentation links for AWS, Microsoft Azure, and Google Cloud. </p><div class="reference-grid" id="referenceGrid"></div><p class="footer-note"> Because cloud services evolve, use the links below as the source of truth for the latest features, limits, and positioning. </p></section></div><script>
+    const providers = [
+      {
+        id: "aws",
+        name: "AWS",
+        color: "#f59e0b",
+        orientation: "Service breadth and granular building blocks",
+        copy: "AWS tends to offer the largest service menu and the widest range of low-level managed primitives, which can be powerful when teams want many implementation paths and tight control over decomposition.",
+        strengths: [
+          "Broad service catalog across infrastructure, data, messaging, and operations",
+          "Strong low-level primitives for composing custom platforms",
+          "Often a natural fit when teams want many knobs and service choices"
+        ]
+      },
+      {
+        id: "azure",
+        name: "Microsoft Azure",
+        color: "#0ea5e9",
+        orientation: "Enterprise integration and hybrid operating model",
+        copy: "Azure often feels strongest where Microsoft identity, Windows, SQL Server, .NET, and hybrid governance are already important parts of the environment.",
+        strengths: [
+          "Deep fit with Microsoft enterprise stacks and identity",
+          "Strong hybrid and multicloud management story through Azure Arc",
+          "A pragmatic home for mixed PaaS, containers, and enterprise data services"
+        ]
+      },
+      {
+        id: "gcp",
+        name: "Google Cloud",
+        color: "#22c55e",
+        orientation: "Data, analytics, AI, and Kubernetes-centric simplicity",
+        copy: "Google Cloud often feels especially clean for analytics, ML platforms, network-heavy applications, and teams that prefer opinionated managed experiences around Kubernetes and serverless containers.",
+        strengths: [
+          "Strong data platform and analytics ergonomics",
+          "Clear container and serverless paths via GKE and Cloud Run",
+          "Commonly favored for modern data, AI, and developer-facing platforms"
+        ]
+      }
+    ];
+
+    const signals = [
+      {
+        label: "Decision first",
+        value: "12 lenses",
+        copy: "Move from workload need to service equivalence instead of memorizing catalogs in isolation."
+      },
+      {
+        label: "Platform fit",
+        value: "5 archetypes",
+        copy: "See where each provider tends to feel strongest for common architecture shapes."
+      },
+      {
+        label: "Grounding",
+        value: "Official links",
+        copy: "Every active lens exposes vendor-owned product or documentation pages for deeper review."
+      },
+      {
+        label: "Best use",
+        value: "Crosswalk",
+        copy: "Translate one provider's design language into another provider's service vocabulary."
+      }
+    ];
+
+    const lenses = [
+      {
+        id: "compute",
+        title: "General compute",
+        decision: "You need full-control VMs or classic instance-oriented compute.",
+        copy: "All three clouds support broad VM-based compute. The real choice is around ecosystem fit, machine variety, and how much of the surrounding platform you want to pair with those instances.",
+        note: "Azure's official architecture guidance also helps decide when App Service, Functions, AKS, or Container Apps should replace raw VMs.",
+        services: {
+          aws: {
+            name: "Amazon EC2",
+            fit: 92,
+            note: "Strong when you want infrastructure-level control or self-managed platforms.",
+            refs: [
+              { label: "Amazon EC2", url: "https://aws.amazon.com/ec2/" },
+              { label: "AWS compute overview", url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/compute-services.html" }
+            ]
+          },
+          azure: {
+            name: "Azure Virtual Machines",
+            fit: 90,
+            note: "Strong for lift-and-shift or enterprise workloads paired with Azure network and identity services.",
+            refs: [
+              { label: "Azure compute choice guide", url: "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/compute-decision-tree" },
+              { label: "Azure VMs overview", url: "https://learn.microsoft.com/en-us/azure/virtual-machines/overview" }
+            ]
+          },
+          gcp: {
+            name: "Compute Engine",
+            fit: 88,
+            note: "Good for VM-centric workloads, especially when bridging into Cloud Run, GKE, or AI-oriented infrastructure choices.",
+            refs: [
+              { label: "Google Cloud products", url: "https://cloud.google.com/products" },
+              { label: "Compute Engine", url: "https://cloud.google.com/products/compute" }
+            ]
+          }
+        }
+      },
+      {
+        id: "containers",
+        title: "Managed containers",
+        decision: "You want a primary Kubernetes or container control plane.",
+        copy: "Teams choosing between EKS, AKS, and GKE often care about control-plane ergonomics, network defaults, IAM integration, and the rest of the platform they will attach.",
+        note: "Azure's compute guidance explicitly positions AKS and Container Apps differently depending on how much Kubernetes control you want.",
+        services: {
+          aws: {
+            name: "Amazon EKS / ECS",
+            fit: 90,
+            note: "EKS is the mainstream Kubernetes anchor; ECS remains important when you want AWS-native orchestration without Kubernetes overhead.",
+            refs: [
+              { label: "Amazon EKS", url: "https://aws.amazon.com/eks/" },
+              { label: "Amazon ECS", url: "https://aws.amazon.com/ecs/" }
+            ]
+          },
+          azure: {
+            name: "Azure Kubernetes Service",
+            fit: 89,
+            note: "AKS fits teams that want managed Kubernetes with strong Azure network, security, and enterprise integration nearby.",
+            refs: [
+              { label: "AKS overview", url: "https://learn.microsoft.com/en-us/azure/aks/what-is-aks" },
+              { label: "Azure compute choice guide", url: "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/compute-decision-tree" }
+            ]
+          },
+          gcp: {
+            name: "Google Kubernetes Engine",
+            fit: 93,
+            note: "GKE is often treated as a flagship managed Kubernetes option and pairs naturally with Cloud Run and Google Cloud networking.",
+            refs: [
+              { label: "Google Kubernetes Engine", url: "https://cloud.google.com/kubernetes-engine" },
+              { label: "Google Cloud products", url: "https://cloud.google.com/products" }
+            ]
+          }
+        }
+      },
+      {
+        id: "serverless",
+        title: "Serverless application path",
+        decision: "You want minimal infrastructure management for event-driven apps or APIs.",
+        copy: "Each provider has function-style execution and app-style managed hosting. The right comparison depends on whether your unit of deployment is a function, container, or web service.",
+        note: "Azure guidance distinguishes Functions, Container Apps, and App Service by hosting model and operational control.",
+        services: {
+          aws: {
+            name: "AWS Lambda",
+            fit: 92,
+            note: "Very strong for event-driven functions and service-integration-heavy serverless designs.",
+            refs: [
+              { label: "AWS Lambda", url: "https://aws.amazon.com/lambda/" },
+              { label: "AWS serverless", url: "https://aws.amazon.com/serverless/" }
+            ]
+          },
+          azure: {
+            name: "Azure Functions / Container Apps",
+            fit: 90,
+            note: "Functions anchors event-driven execution, while Container Apps is often the cleaner path for serverless containers.",
+            refs: [
+              { label: "Azure Functions overview", url: "https://learn.microsoft.com/en-us/azure/azure-functions/functions-overview" },
+              { label: "Azure compute choice guide", url: "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/compute-decision-tree" }
+            ]
+          },
+          gcp: {
+            name: "Cloud Run / Cloud Run functions",
+            fit: 93,
+            note: "Cloud Run is often the simplest managed app path for containerized services; Cloud Run functions covers function-style events.",
+            refs: [
+              { label: "Cloud Run", url: "https://cloud.google.com/run" },
+              { label: "Cloud Functions", url: "https://cloud.google.com/functions" }
+            ]
+          }
+        }
+      },
+      {
+        id: "object-storage",
+        title: "Object storage",
+        decision: "You need durable, scalable object storage for data lakes, content, backups, or assets.",
+        copy: "Object storage is one of the easiest cross-cloud translations. The major differences are ecosystem integration, lifecycle tooling, and which analytics or AI platform sits nearest to the bucket layer.",
+        note: "Azure storage guidance also highlights file, block, queue, and table options around the same storage platform.",
+        services: {
+          aws: {
+            name: "Amazon S3",
+            fit: 95,
+            note: "The canonical AWS object layer, deeply integrated with analytics, logs, archives, backups, and application storage paths.",
+            refs: [
+              { label: "Amazon S3", url: "https://aws.amazon.com/s3/" },
+              { label: "AWS products", url: "https://aws.amazon.com/products/" }
+            ]
+          },
+          azure: {
+            name: "Azure Blob Storage",
+            fit: 92,
+            note: "The core object service in Azure Storage and a major foundation for analytics and application storage paths.",
+            refs: [
+              { label: "Azure storage architecture", url: "https://learn.microsoft.com/en-us/azure/architecture/storage/storage-get-started" },
+              { label: "Azure Blob Storage introduction", url: "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction" }
+            ]
+          },
+          gcp: {
+            name: "Cloud Storage",
+            fit: 93,
+            note: "The main object layer in Google Cloud, closely paired with BigQuery, Dataflow, Vertex AI, and general application storage.",
+            refs: [
+              { label: "Cloud Storage", url: "https://cloud.google.com/storage" },
+              { label: "Google Cloud products", url: "https://cloud.google.com/products" }
+            ]
+          }
+        }
+      },
+      {
+        id: "relational",
+        title: "Managed relational data",
+        decision: "You want a managed relational database for transactional applications.",
+        copy: "Cross-cloud equivalence is strong here, but surrounding ecosystem preference matters. Teams often decide based on engine support, migration posture, enterprise alignment, and nearby analytics or app services.",
+        note: "Architecture choices usually route teams into platform services before they commit to low-level database management.",
+        services: {
+          aws: {
+            name: "Amazon RDS / Aurora",
+            fit: 91,
+            note: "RDS is the general managed path; Aurora often becomes the flagship AWS-managed relational platform for cloud-native workloads.",
+            refs: [
+              { label: "Amazon RDS", url: "https://aws.amazon.com/rds/" },
+              { label: "Amazon Aurora", url: "https://aws.amazon.com/rds/aurora/" }
+            ]
+          },
+          azure: {
+            name: "Azure SQL Database",
+            fit: 93,
+            note: "A natural fit for SQL-centric enterprise workloads and teams with Microsoft data estate alignment.",
+            refs: [
+              { label: "Azure SQL Database overview", url: "https://learn.microsoft.com/en-us/azure/azure-sql/database/sql-database-paas-overview" },
+              { label: "Azure decision guides", url: "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/technology-choices-overview" }
+            ]
+          },
+          gcp: {
+            name: "Cloud SQL / AlloyDB",
+            fit: 88,
+            note: "Cloud SQL is the mainstream managed relational service, while AlloyDB matters for PostgreSQL-centric performance-sensitive designs.",
+            refs: [
+              { label: "Cloud SQL", url: "https://cloud.google.com/sql" },
+              { label: "AlloyDB", url: "https://cloud.google.com/alloydb" }
+            ]
+          }
+        }
+      }
+    ];
+
+    lenses.push(
+      {
+        id: "nosql",
+        title: "Managed NoSQL",
+        decision: "You need low-latency key-value, document, or globally distributed NoSQL access.",
+        copy: "This is one of the least perfect equivalence zones because the providers lean into different data models. Treat the mapping here as the nearest mainstream design translation, not exact feature identity.",
+        note: "Data model choice matters more than vendor family label in this lens.",
+        services: {
+          aws: {
+            name: "Amazon DynamoDB",
+            fit: 93,
+            note: "A strong fit for serverless and high-scale key-value or document-adjacent workloads with predictable access patterns.",
+            refs: [
+              { label: "Amazon DynamoDB", url: "https://aws.amazon.com/dynamodb/" },
+              { label: "AWS products", url: "https://aws.amazon.com/products/" }
+            ]
+          },
+          azure: {
+            name: "Azure Cosmos DB",
+            fit: 92,
+            note: "Positioned for globally distributed, multi-model workloads with strong emphasis on latency and developer-facing flexibility.",
+            refs: [
+              { label: "Azure Cosmos DB introduction", url: "https://learn.microsoft.com/en-us/azure/cosmos-db/introduction" },
+              { label: "Azure decision guides", url: "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/technology-choices-overview" }
+            ]
+          },
+          gcp: {
+            name: "Firestore / Bigtable",
+            fit: 88,
+            note: "Firestore is common for application-facing document patterns; Bigtable is the better translation for wide-column or very high-throughput workloads.",
+            refs: [
+              { label: "Firestore", url: "https://cloud.google.com/firestore" },
+              { label: "Bigtable", url: "https://cloud.google.com/bigtable" }
+            ]
+          }
+        }
+      },
+      {
+        id: "analytics",
+        title: "Analytics warehouse and lakehouse",
+        decision: "You need a primary analytics platform for warehousing, lakehouse, or large-scale query workloads.",
+        copy: "AWS leans into a broader composed analytics stack, Azure often aligns with Microsoft analytics estates, and Google Cloud is especially associated with managed analytics simplicity.",
+        note: "Analytics preference is often driven by adjacent BI, governance, and data engineering tooling as much as the warehouse itself.",
+        services: {
+          aws: {
+            name: "Amazon Redshift / Glue / Lake Formation",
+            fit: 89,
+            note: "Powerful analytics stack, often more composed across multiple services, which can be a strength or an operational cost depending on the team.",
+            refs: [
+              { label: "Amazon Redshift", url: "https://aws.amazon.com/redshift/" },
+              { label: "AWS Glue", url: "https://aws.amazon.com/glue/" }
+            ]
+          },
+          azure: {
+            name: "Azure Synapse Analytics",
+            fit: 89,
+            note: "Brings warehousing, Spark, integration, and analytics together, especially for Microsoft-oriented enterprise data estates.",
+            refs: [
+              { label: "Azure Synapse overview", url: "https://learn.microsoft.com/en-us/azure/synapse-analytics/overview-what-is" },
+              { label: "Azure decision guides", url: "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/technology-choices-overview" }
+            ]
+          },
+          gcp: {
+            name: "BigQuery",
+            fit: 95,
+            note: "Frequently treated as Google Cloud's flagship analytics anchor because the managed warehouse experience is central to the platform's data identity.",
+            refs: [
+              { label: "BigQuery", url: "https://cloud.google.com/bigquery" },
+              { label: "Google Cloud products", url: "https://cloud.google.com/products" }
+            ]
+          }
+        }
+      },
+      {
+        id: "messaging",
+        title: "Messaging and eventing",
+        decision: "You need async messaging, pub/sub, or event routing across services.",
+        copy: "A pure one-to-one mapping rarely exists. In practice, teams compare provider messaging portfolios, then choose the subset that matches queueing, pub/sub, fanout, or event routing needs.",
+        note: "Messaging parity is usually portfolio-to-portfolio, not service-to-service.",
+        services: {
+          aws: {
+            name: "SQS / SNS / EventBridge",
+            fit: 92,
+            note: "AWS usually splits messaging concerns into focused services, which makes the event portfolio flexible but more decomposed.",
+            refs: [
+              { label: "Amazon SQS", url: "https://aws.amazon.com/sqs/" },
+              { label: "Amazon SNS", url: "https://aws.amazon.com/sns/" },
+              { label: "Amazon EventBridge", url: "https://aws.amazon.com/eventbridge/" }
+            ]
+          },
+          azure: {
+            name: "Service Bus / Event Grid",
+            fit: 91,
+            note: "Balances enterprise messaging with event delivery, and fits naturally with Functions, Logic Apps, and Microsoft integration paths.",
+            refs: [
+              { label: "Azure Service Bus overview", url: "https://learn.microsoft.com/en-us/azure/service-bus-messaging/service-bus-messaging-overview" },
+              { label: "Azure Event Grid overview", url: "https://learn.microsoft.com/en-us/azure/event-grid/overview" }
+            ]
+          },
+          gcp: {
+            name: "Pub/Sub / Eventarc",
+            fit: 90,
+            note: "Often feels clean when messaging is feeding data pipelines, Cloud Run, or event-driven applications.",
+            refs: [
+              { label: "Pub/Sub", url: "https://cloud.google.com/pubsub" },
+              { label: "Eventarc", url: "https://cloud.google.com/eventarc" }
+            ]
+          }
+        }
+      },
+      {
+        id: "ai",
+        title: "AI and ML platform",
+        decision: "You need a primary managed platform for ML models, generative AI, or agentic application development.",
+        copy: "The clouds now span classical ML, foundation model access, enterprise governance, and developer tooling. Comparison here depends on whether you prioritize model breadth, agent tooling, enterprise controls, or data-platform adjacency.",
+        note: "Microsoft branding is transitioning from Azure AI Foundry to Microsoft Foundry; the linked official pages reflect that change.",
+        services: {
+          aws: {
+            name: "Amazon SageMaker / Amazon Bedrock",
+            fit: 91,
+            note: "SageMaker remains important for ML workflows, while Bedrock is central to foundation-model and gen-AI application paths on AWS.",
+            refs: [
+              { label: "Amazon SageMaker", url: "https://aws.amazon.com/sagemaker/" },
+              { label: "Amazon Bedrock", url: "https://aws.amazon.com/bedrock/" }
+            ]
+          },
+          azure: {
+            name: "Microsoft Foundry / Azure AI Foundry",
+            fit: 92,
+            note: "Azure's AI platform increasingly centers on enterprise AI operations and model/application development under the Foundry umbrella.",
+            refs: [
+              { label: "Microsoft Foundry", url: "https://learn.microsoft.com/en-us/azure/foundry/what-is-foundry" },
+              { label: "Azure AI Foundry", url: "https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-ai-foundry?wt.md_id=AZ-MVP-5004796" }
+            ]
+          },
+          gcp: {
+            name: "Vertex AI",
+            fit: 93,
+            note: "Vertex AI is the central managed AI platform on Google Cloud and pairs naturally with the platform's data and analytics stack.",
+            refs: [
+              { label: "Vertex AI", url: "https://cloud.google.com/vertex-ai" },
+              { label: "Google Cloud products", url: "https://cloud.google.com/products" }
+            ]
+          }
+        }
+      },
+      {
+        id: "networking",
+        title: "Networking and edge",
+        decision: "You care about virtual networks, DNS, ingress, CDN, and global delivery.",
+        copy: "All three providers are capable here. The real differences show up in defaults, pricing, global-network posture, and how cleanly the edge services combine with application hosting.",
+        note: "Networking preference often emerges from the rest of the landing-zone design rather than networking alone.",
+        services: {
+          aws: {
+            name: "VPC / Route 53 / CloudFront",
+            fit: 91,
+            note: "AWS networking is broad and modular, with strong global delivery primitives and many composition options.",
+            refs: [
+              { label: "Amazon VPC", url: "https://aws.amazon.com/vpc/" },
+              { label: "Amazon CloudFront", url: "https://aws.amazon.com/cloudfront/" }
+            ]
+          },
+          azure: {
+            name: "Virtual Network / Front Door",
+            fit: 90,
+            note: "Azure's network path aligns well with enterprise landing zones, private connectivity, and application delivery across mixed hosting models.",
+            refs: [
+              { label: "Azure Front Door", url: "https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview" },
+              { label: "Azure decision guides", url: "https://learn.microsoft.com/en-us/azure/architecture/guide/technology-choices/technology-choices-overview" }
+            ]
+          },
+          gcp: {
+            name: "VPC / Load Balancing / Cloud CDN",
+            fit: 92,
+            note: "Google Cloud is often praised for network-centric application delivery, especially when paired with GKE, Cloud Run, or global services.",
+            refs: [
+              { label: "Cloud Load Balancing", url: "https://cloud.google.com/load-balancing" },
+              { label: "Cloud CDN", url: "https://cloud.google.com/cdn" }
+            ]
+          }
+        }
+      },
+      {
+        id: "security",
+        title: "Identity and security controls",
+        decision: "You need the core governance layer: identity, keys, secrets, posture, and security operations.",
+        copy: "The service translation is straightforward; operating model and identity posture usually decide the winner.",
+        note: "Security preference is often tightly coupled to identity workflow and what the wider enterprise already trusts.",
+        services: {
+          aws: {
+            name: "IAM / KMS / Secrets Manager",
+            fit: 92,
+            note: "Broad, mature security building blocks that integrate deeply with the rest of the AWS service graph.",
+            refs: [
+              { label: "AWS IAM", url: "https://aws.amazon.com/iam/" },
+              { label: "AWS KMS", url: "https://aws.amazon.com/kms/" }
+            ]
+          },
+          azure: {
+            name: "Microsoft Entra / Key Vault",
+            fit: 94,
+            note: "Azure often feels especially strong when Entra identity and Microsoft security workflows are already part of the operating model.",
+            refs: [
+              { label: "Microsoft Entra", url: "https://learn.microsoft.com/en-us/entra/fundamentals/whatis" },
+              { label: "Azure Key Vault overview", url: "https://learn.microsoft.com/en-us/azure/key-vault/general/overview" }
+            ]
+          },
+          gcp: {
+            name: "Cloud IAM / Cloud KMS / Security Command Center",
+            fit: 89,
+            note: "Strong security stack, especially when paired with organization-level policy, network controls, and centralized platform teams.",
+            refs: [
+              { label: "Cloud IAM", url: "https://cloud.google.com/iam" },
+              { label: "Security Command Center", url: "https://cloud.google.com/security-command-center" }
+            ]
+          }
+        }
+      },
+      {
+        id: "observability",
+        title: "Observability and operations",
+        decision: "You need logs, metrics, traces, operational insight, and governance visibility.",
+        copy: "Service names map cleanly enough, but operators usually care more about cross-service defaults, query ergonomics, governance tie-in, and whether the telemetry model matches their platform style.",
+        note: "Observability preference often emerges from how opinionated the rest of the platform already is.",
+        services: {
+          aws: {
+            name: "CloudWatch / CloudTrail / X-Ray",
+            fit: 90,
+            note: "A mature operational toolkit that tracks naturally with the rest of the AWS ecosystem.",
+            refs: [
+              { label: "Amazon CloudWatch", url: "https://aws.amazon.com/cloudwatch/" },
+              { label: "AWS CloudTrail", url: "https://aws.amazon.com/cloudtrail/" }
+            ]
+          },
+          azure: {
+            name: "Azure Monitor / Application Insights",
+            fit: 91,
+            note: "Often feels cohesive for enterprise app estates spanning PaaS, containers, and hybrid assets.",
+            refs: [
+              { label: "Azure Monitor overview", url: "https://learn.microsoft.com/en-us/azure/azure-monitor/fundamentals/overview" },
+              { label: "Application Insights overview", url: "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-insights-overview" }
+            ]
+          },
+          gcp: {
+            name: "Cloud Monitoring / Cloud Logging / Trace",
+            fit: 89,
+            note: "Fits especially well when teams prefer managed defaults and tight coupling to container and serverless workloads.",
+            refs: [
+              { label: "Cloud Monitoring", url: "https://cloud.google.com/monitoring" },
+              { label: "Cloud Logging", url: "https://cloud.google.com/logging" }
+            ]
+          }
+        }
+      },
+      {
+        id: "hybrid",
+        title: "Hybrid and multicloud",
+        decision: "You need to manage, govern, or extend workloads beyond one public cloud.",
+        copy: "The nearest crosswalk is less about a single service and more about a management philosophy. This is one of the most differentiated lenses.",
+        note: "Azure Arc is especially explicit about multicloud and on-premises governance; Anthos matters when Kubernetes is the operating center.",
+        services: {
+          aws: {
+            name: "AWS Outposts",
+            fit: 84,
+            note: "Strong when the goal is to extend AWS operational patterns on premises, but not usually framed as the broadest multicloud governance story.",
+            refs: [
+              { label: "AWS Outposts", url: "https://aws.amazon.com/outposts/" },
+              { label: "AWS products", url: "https://aws.amazon.com/products/" }
+            ]
+          },
+          azure: {
+            name: "Azure Arc",
+            fit: 95,
+            note: "A major Azure differentiator when the hardest problem is consistent governance across Azure, other clouds, and on-premises assets.",
+            refs: [
+              { label: "Azure Arc overview", url: "https://learn.microsoft.com/en-us/azure/azure-arc/overview" },
+              { label: "Azure decision guides", url: "https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/decision-guides/" }
+            ]
+          },
+          gcp: {
+            name: "Anthos",
+            fit: 90,
+            note: "Meaningful when the platform center is Kubernetes and policy control across environments rather than a pure cloud-resource inventory model.",
+            refs: [
+              { label: "Anthos", url: "https://cloud.google.com/anthos" },
+              { label: "Google Cloud products", url: "https://cloud.google.com/products" }
+            ]
+          }
+        }
+      }
+    );
+
+    const matrixRows = [
+      { lens: "VM compute", aws: "EC2", azure: "Azure Virtual Machines", gcp: "Compute Engine" },
+      { lens: "Managed Kubernetes", aws: "EKS", azure: "AKS", gcp: "GKE" },
+      { lens: "Serverless apps", aws: "Lambda", azure: "Azure Functions / Container Apps", gcp: "Cloud Run / Cloud Run functions" },
+      { lens: "Object storage", aws: "S3", azure: "Blob Storage", gcp: "Cloud Storage" },
+      { lens: "Managed SQL", aws: "RDS / Aurora", azure: "Azure SQL Database", gcp: "Cloud SQL / AlloyDB" },
+      { lens: "NoSQL", aws: "DynamoDB", azure: "Cosmos DB", gcp: "Firestore / Bigtable" },
+      { lens: "Warehouse", aws: "Redshift", azure: "Synapse Analytics", gcp: "BigQuery" },
+      { lens: "Messaging", aws: "SQS / SNS / EventBridge", azure: "Service Bus / Event Grid", gcp: "Pub/Sub / Eventarc" },
+      { lens: "AI platform", aws: "SageMaker / Bedrock", azure: "Foundry / Azure AI Foundry", gcp: "Vertex AI" },
+      { lens: "Hybrid", aws: "Outposts", azure: "Azure Arc", gcp: "Anthos" }
+    ];
+
+    const scenarios = [
+      {
+        title: "Enterprise Microsoft estate",
+        copy: "Azure often becomes the shortest path when Entra identity, Windows, SQL Server, Microsoft security tooling, and hybrid governance are already part of the environment.",
+        picks: ["Azure primary fit", "AWS secondary when granular infrastructure control matters", "GCP selective for analytics or AI adjacencies"]
+      },
+      {
+        title: "Cloud-native platform with many service choices",
+        copy: "AWS often feels strongest when teams want a broad menu of managed primitives and are comfortable composing multiple services into a custom platform.",
+        picks: ["AWS primary fit", "Azure strong for enterprise-integrated variants", "GCP strong when simplicity matters more than service count"]
+      },
+      {
+        title: "Data and AI-heavy product platform",
+        copy: "Google Cloud often feels especially compelling when the center of gravity is analytics, ML platforms, managed data systems, and container-centric developer workflows.",
+        picks: ["GCP primary fit", "AWS strong for broader surrounding services", "Azure strong where enterprise controls dominate"]
+      },
+      {
+        title: "Hybrid or multicloud governance mandate",
+        copy: "Azure Arc often stands out when the hardest problem is consistent governance across on-premises, Azure, and non-Azure assets. Anthos becomes more compelling when Kubernetes is the true operating center.",
+        picks: ["Azure Arc for broad resource governance", "Anthos for Kubernetes-led platform control", "Outposts for AWS operational extension on premises"]
+      },
+      {
+        title: "Balanced modern app estate",
+        copy: "All three providers are credible for modern applications. The winning choice usually comes from identity, data strategy, and operating model rather than a single must-have service.",
+        picks: ["Start with the team's strongest operating model", "Use the service lenses above to validate app, data, and platform fit", "Favor the cloud that reduces day-two friction for the specific workload"]
+      }
+    ];
+
+    const state = { lensId: lenses[0].id };
+    const elements = {};
+
+    document.addEventListener("DOMContentLoaded", init);
+
+    function init() {
+      [
+        "summaryGrid",
+        "signalGrid",
+        "providerCards",
+        "lensControls",
+        "lensIntro",
+        "lensGrid",
+        "matrixGrid",
+        "scenarioGrid",
+        "referenceGrid"
+      ].forEach((id) => {
+        elements[id] = document.getElementById(id);
+      });
+
+      renderSummary();
+      renderSignals();
+      renderProviders();
+      renderLensControls();
+      renderLens();
+      renderMatrix();
+      renderScenarios();
+    }
+
+    function activeLens() {
+      return lenses.find((lens) => lens.id === state.lensId) || lenses[0];
+    }
+
+    function renderSummary() {
+      const cards = [
+        { value: "3", label: "Major clouds", note: "AWS, Microsoft Azure, and Google Cloud aligned in one crosswalk." },
+        { value: String(lenses.length), label: "Decision lenses", note: "Service areas most architects compare repeatedly." },
+        { value: "10", label: "Crosswalk rows", note: "Quick translation table for common architecture choices." }
+      ];
+
+      elements.summaryGrid.innerHTML = cards.map((card) => `
+        <article class="summary-card">
+          <div class="summary-value">${escapeHtml(card.value)}</div>
+          <div class="summary-label">${escapeHtml(card.label)}</div>
+          <div class="note">${escapeHtml(card.note)}</div>
+        </article>
+      `).join("");
+    }
+
+    function renderSignals() {
+      elements.signalGrid.innerHTML = signals.map((item) => `
+        <article class="signal-card">
+          <div class="summary-label">${escapeHtml(item.label)}</div>
+          <div class="summary-value">${escapeHtml(item.value)}</div>
+          <div class="note">${escapeHtml(item.copy)}</div>
+        </article>
+      `).join("");
+    }
+
+    function renderProviders() {
+      elements.providerCards.innerHTML = providers.map((provider) => `
+        <article class="provider-card" style="--provider-color:${provider.color};">
+          <div class="provider-badge">${escapeHtml(provider.name)}</div>
+          <h3>${escapeHtml(provider.orientation)}</h3>
+          <p class="provider-copy">${escapeHtml(provider.copy)}</p>
+          <ul class="provider-strengths">
+            ${provider.strengths.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+          </ul>
+        </article>
+      `).join("");
+    }
+
+    function renderLensControls() {
+      elements.lensControls.innerHTML = lenses.map((lens) => `
+        <button class="lens-button ${lens.id === state.lensId ? "is-active" : ""}" type="button" data-lens-id="${escapeHtml(lens.id)}">
+          ${escapeHtml(lens.title)}
+        </button>
+      `).join("");
+
+      elements.lensControls.querySelectorAll("[data-lens-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.lensId = button.getAttribute("data-lens-id");
+          renderLensControls();
+          renderLens();
+        });
+      });
+    }
+
+    function renderLens() {
+      const lens = activeLens();
+
+      elements.lensIntro.innerHTML = `
+        <div class="matrix-kicker">Decision lens</div>
+        <strong>${escapeHtml(lens.title)}</strong>
+        <p class="lens-copy">${escapeHtml(lens.decision)}</p>
+        <p class="lens-copy">${escapeHtml(lens.copy)}</p>
+        <p class="note">${escapeHtml(lens.note)}</p>
+      `;
+
+      elements.lensGrid.innerHTML = providers.map((provider) => {
+        const service = lens.services[provider.id];
+        return `
+          <article class="lens-card" style="--provider-color:${provider.color};">
+            <div class="provider-badge">${escapeHtml(provider.name)}</div>
+            <div class="lens-service">${escapeHtml(service.name)}</div>
+            <div class="fit-bar"><div class="fit-fill" style="width:${service.fit}%"></div></div>
+            <div class="note">Relative fit: ${service.fit}/100</div>
+            <p class="lens-copy">${escapeHtml(service.note)}</p>
+          </article>
+        `;
+      }).join("");
+
+      renderReferences();
+    }
+
+    function renderMatrix() {
+      elements.matrixGrid.innerHTML = matrixRows.map((row) => `
+        <article class="matrix-card">
+          <div class="matrix-kicker">${escapeHtml(row.lens)}</div>
+          <strong>AWS</strong>
+          <div class="note">${escapeHtml(row.aws)}</div>
+          <strong>Azure</strong>
+          <div class="note">${escapeHtml(row.azure)}</div>
+          <strong>Google Cloud</strong>
+          <div class="note">${escapeHtml(row.gcp)}</div>
+        </article>
+      `).join("");
+    }
+
+    function renderScenarios() {
+      elements.scenarioGrid.innerHTML = scenarios.map((scenario) => `
+        <article class="scenario-card">
+          <div class="provider-badge">Design inference</div>
+          <h3>${escapeHtml(scenario.title)}</h3>
+          <p class="scenario-copy">${escapeHtml(scenario.copy)}</p>
+          <ul class="scenario-picks">
+            ${scenario.picks.map((pick) => `<li>${escapeHtml(pick)}</li>`).join("")}
+          </ul>
+        </article>
+      `).join("");
+    }
+
+    function renderReferences() {
+      const lens = activeLens();
+
+      elements.referenceGrid.innerHTML = providers.map((provider) => {
+        const service = lens.services[provider.id];
+        return `
+          <article class="reference-card">
+            <div class="provider-badge" style="--provider-color:${provider.color};">
+              ${escapeHtml(provider.name)}
+            </div>
+            <h3>${escapeHtml(service.name)}</h3>
+            <p class="reference-copy">${escapeHtml(service.note)}</p>
+            <div class="reference-list">
+              ${service.refs.map((ref) => `
+                <a class="reference-link" href="${escapeHtml(ref.url)}" target="_blank" rel="noreferrer">${escapeHtml(ref.label)}</a>
+              `).join("")}
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+  </script></body></html>

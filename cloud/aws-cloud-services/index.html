@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><script src="../../theme-sync.js"></script><script src="../../visualizer-shell.js"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AWS Cloud Services Visual Tutorial</title><meta name="description" content="Interactive AWS service atlas with animated category maps, official references, searchable catalog views, and platform study journeys."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="../service-catalog-viewer.css"></head><body><div class="shell"><header class="topbar panel"><div class="brand"><div class="brand-mark" id="brandMark">A</div><div><div class="brand-title" id="brandTitle"></div><div class="brand-subtitle" id="brandSubtitle"></div></div></div><div class="toolbar"><label class="search"><span>Search</span><input id="serviceSearch" type="search" placeholder="Search AWS services, categories, and use cases"></label></div></header><section class="hero"><article class="hero-copy panel"><span class="eyebrow" id="heroEyebrow"></span><h1 class="hero-title" id="heroTitle"></h1><p class="section-lead" id="heroBody"></p><div class="hero-actions"><a class="jump-link is-primary" href="#catalog">Explore services</a><a class="jump-link" href="#references">Open official references</a></div><div class="hero-stats" id="heroStats"></div></article><aside class="hero-visual panel"><h2 class="section-title">Platform Constellation</h2><p class="section-lead" id="visualLead"></p><div class="constellation-wrap"><canvas id="constellationCanvas" class="constellation-canvas"></canvas></div><div class="legend-grid" id="legendGrid"></div></aside></section><section class="panel catalog-panel"><h2 class="section-title">Category Radar</h2><p class="section-lead" id="overviewLead"></p><div class="overview-grid" id="overviewGrid"></div></section><section class="experience-layout"><aside class="category-panel panel"><h2 class="section-title">Filter the Catalog</h2><p class="section-lead">Move between the official AWS service categories and then narrow by operating band to see where a workload begins to cluster.</p><div class="category-list" id="categoryList"></div><p class="footnote" id="catalogFootnote"></p></aside><div class="catalog-stack"><section class="catalog-panel panel" id="catalog"><h2 class="section-title">Service Explorer</h2><p class="section-lead" id="catalogLead"></p><div class="catalog-toolbar"><div class="meta-card" id="catalogSummary"></div><select class="filter-select" id="domainSelect" aria-label="Filter by operating band"></select></div><div class="service-grid" id="serviceGrid"></div></section><section class="detail-panel panel" id="detailPanel"></section><section class="journey-panel panel" id="journeys"><h2 class="section-title">Build Patterns</h2><p class="section-lead" id="journeyLead"></p><div class="journey-grid" id="journeyGrid"></div></section><section class="reference-panel panel" id="references"><h2 class="section-title">Official References</h2><p class="section-lead" id="referenceLead"></p><div class="reference-grid" id="referenceGrid"></div></section></div></section><p class="footnote" id="globalFootnote"></p></div><script>
+    window.CLOUD_VIEWER_CONFIG = {
+      vendorId: "aws",
+      vendor: "AWS",
+      mark: "A",
+      accent: "#f59e0b",
+      title: "AWS Cloud Services Visual Tutorial",
+      subtitle: "A searchable atlas of AWS services, categories, workloads, and official documentation paths.",
+      eyebrow: "Amazon Web Services",
+      heroTitle: "Map the AWS service universe",
+      heroBody: "This guide turns the official AWS service catalog into a study map: category by category, service by service, with a search-first explorer, animated platform constellation, workload patterns, and direct references back to AWS documentation.",
+      visualLead: "The constellation clusters AWS categories by operating band so you can quickly see where the platform is densest today and jump into the right slice of the catalog.",
+      overviewLead: "The cards below show the busiest AWS catalog bands, helping you spot where platform choices tend to stack up when you are designing application, data, networking, or governance foundations.",
+      catalogLead: "Search for a service name, narrow to an operating band, or click a category node to move through the official AWS service inventory.",
+      catalogFootnote: "Catalog data is sourced from AWS official service overview pages and the AWS products directory, then regrouped here for exploration.",
+      journeyLead: "These study journeys show how teams often traverse AWS when building APIs, data platforms, AI systems, and governance-heavy foundations.",
+      referenceLead: "Every card here points back to AWS-owned documentation or product pages so you can move from visual survey into implementation details.",
+      footnote: "Because AWS updates services over time, treat this page as a visual index into the official catalog rather than a substitute for the latest service-specific guides.",
+      journeys: [
+        {
+          kicker: "Application path",
+          title: "Event-driven product surface",
+          copy: "Start with edge delivery and APIs, connect functions or containers, then layer messaging, identity, and observability before broad rollout.",
+          steps: ["CloudFront", "API Gateway", "Lambda", "SQS or EventBridge", "CloudWatch"]
+        },
+        {
+          kicker: "Data path",
+          title: "Lakehouse and analytics stack",
+          copy: "Land raw assets durably, catalog them, query them incrementally, then operationalize the data path with orchestration, security, and cost controls.",
+          steps: ["Amazon S3", "AWS Glue", "Amazon Athena", "Amazon Redshift", "Lake Formation"]
+        },
+        {
+          kicker: "AI path",
+          title: "Generative and ML platform",
+          copy: "Pair model access with data preparation, secure runtime choices, and evaluation loops before you move into production traffic.",
+          steps: ["Amazon Bedrock", "Amazon SageMaker", "Amazon EKS", "Amazon OpenSearch Service", "IAM"]
+        },
+        {
+          kicker: "Platform path",
+          title: "Security and operations foundation",
+          copy: "Establish account boundaries, identity guardrails, logging, secrets, and centralized visibility before service sprawl grows.",
+          steps: ["Organizations", "IAM Identity Center", "AWS Config", "CloudTrail", "Security Hub"]
+        },
+        {
+          kicker: "Integration path",
+          title: "Evented integration backbone",
+          copy: "Design asynchronous flows around events, queues, orchestration, and retries before downstream systems multiply.",
+          steps: ["Amazon EventBridge", "Amazon SQS", "AWS Step Functions", "Lambda", "Amazon SNS"]
+        }
+      ],
+      referenceLinks: [
+        {
+          title: "AWS products directory",
+          copy: "The primary AWS service landing page across product families.",
+          url: "https://aws.amazon.com/products/"
+        },
+        {
+          title: "AWS cloud platform overview",
+          copy: "The AWS whitepaper index used for category grouping and service descriptions.",
+          url: "https://docs.aws.amazon.com/whitepapers/latest/aws-overview/amazon-web-services-cloud-platform.html"
+        },
+        {
+          title: "AWS documentation home",
+          copy: "The main entry point into service guides, developer docs, and architecture references.",
+          url: "https://docs.aws.amazon.com/"
+        }
+      ]
+    };
+  </script><script src="./catalog-data.js"></script><script src="../service-catalog-viewer.js"></script></body></html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"><script src="../../theme-sync.js"></script><script src="../../visualizer-shell.js"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Google Cloud Services Visual Tutorial</title><meta name="description" content="Interactive Google Cloud service atlas with animated category maps, official references, searchable catalog views, and platform study journeys."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="../service-catalog-viewer.css"></head><body><div class="shell"><header class="topbar panel"><div class="brand"><div class="brand-mark" id="brandMark">G</div><div><div class="brand-title" id="brandTitle"></div><div class="brand-subtitle" id="brandSubtitle"></div></div></div><div class="toolbar"><label class="search"><span>Search</span><input id="serviceSearch" type="search" placeholder="Search Google Cloud services, categories, and use cases"></label></div></header><section class="hero"><article class="hero-copy panel"><span class="eyebrow" id="heroEyebrow"></span><h1 class="hero-title" id="heroTitle"></h1><p class="section-lead" id="heroBody"></p><div class="hero-actions"><a class="jump-link is-primary" href="#catalog">Explore services</a><a class="jump-link" href="#references">Open official references</a></div><div class="hero-stats" id="heroStats"></div></article><aside class="hero-visual panel"><h2 class="section-title">Platform Constellation</h2><p class="section-lead" id="visualLead"></p><div class="constellation-wrap"><canvas id="constellationCanvas" class="constellation-canvas"></canvas></div><div class="legend-grid" id="legendGrid"></div></aside></section><section class="panel catalog-panel"><h2 class="section-title">Category Radar</h2><p class="section-lead" id="overviewLead"></p><div class="overview-grid" id="overviewGrid"></div></section><section class="experience-layout"><aside class="category-panel panel"><h2 class="section-title">Filter the Catalog</h2><p class="section-lead">Google Cloud's product list is compact but broad, so it helps to move from operating band to category before diving into a specific service.</p><div class="category-list" id="categoryList"></div><p class="footnote" id="catalogFootnote"></p></aside><div class="catalog-stack"><section class="catalog-panel panel" id="catalog"><h2 class="section-title">Service Explorer</h2><p class="section-lead" id="catalogLead"></p><div class="catalog-toolbar"><div class="meta-card" id="catalogSummary"></div><select class="filter-select" id="domainSelect" aria-label="Filter by operating band"></select></div><div class="service-grid" id="serviceGrid"></div></section><section class="detail-panel panel" id="detailPanel"></section><section class="journey-panel panel" id="journeys"><h2 class="section-title">Build Patterns</h2><p class="section-lead" id="journeyLead"></p><div class="journey-grid" id="journeyGrid"></div></section><section class="reference-panel panel" id="references"><h2 class="section-title">Official References</h2><p class="section-lead" id="referenceLead"></p><div class="reference-grid" id="referenceGrid"></div></section></div></section><p class="footnote" id="globalFootnote"></p></div><script>
+    window.CLOUD_VIEWER_CONFIG = {
+      vendorId: "gcp",
+      vendor: "Google Cloud",
+      mark: "G",
+      accent: "#1a73e8",
+      title: "Google Cloud Services Visual Tutorial",
+      subtitle: "A searchable atlas of Google Cloud products, workload patterns, and official documentation paths.",
+      eyebrow: "Google Cloud Platform",
+      heroTitle: "Survey the Google Cloud product graph",
+      heroBody: "This guide converts the official Google Cloud product list into a visual study environment with animated category clusters, workload-oriented reading paths, a searchable catalog, and quick jumps into official documentation.",
+      visualLead: "Google Cloud's catalog is grouped here into operating bands so you can see how AI, data, app, infrastructure, networking, and security services relate as you design a platform.",
+      overviewLead: "These cards surface the heaviest Google Cloud catalog bands first, helping you orient around where the platform is richest for applications, data systems, AI workloads, networking, and governance.",
+      catalogLead: "Search the official product inventory, filter by operating band, or click a cluster in the animation to move directly into the right family of Google Cloud services.",
+      catalogFootnote: "Catalog data is sourced from Google Cloud's published product list and product pages, with documentation links preserved for each entry.",
+      journeyLead: "These study journeys reflect how teams often traverse Google Cloud while modernizing apps, building AI platforms, or assembling globally distributed systems.",
+      referenceLead: "Each reference card lands on an official Google-owned page so you can move from this overview into product docs, tutorials, and service-specific APIs.",
+      footnote: "Google Cloud evolves quickly, so use this explorer as a structured starting point and rely on the linked official documentation for the newest implementation details.",
+      journeys: [
+        {
+          kicker: "Application path",
+          title: "Global app modernization",
+          copy: "Begin with compute choices, add messaging and identity, then connect observability and rollout controls before broadening traffic.",
+          steps: ["Cloud Run", "GKE", "API Gateway", "Pub/Sub", "Cloud Monitoring"]
+        },
+        {
+          kicker: "Data path",
+          title: "Analytics and AI data plane",
+          copy: "Pair ingest and durable storage with warehousing and notebooks, then layer governance and access patterns around the full analytics loop.",
+          steps: ["Cloud Storage", "Dataflow", "BigQuery", "Dataproc", "Dataplex"]
+        },
+        {
+          kicker: "AI path",
+          title: "Vertex AI delivery loop",
+          copy: "Move from data preparation to model iteration, then connect application serving and platform operations around the model lifecycle.",
+          steps: ["Vertex AI", "BigQuery", "Cloud Run", "Artifact Registry", "Cloud Logging"]
+        },
+        {
+          kicker: "Platform path",
+          title: "Security and operations foundation",
+          copy: "Set identity, logging, policy, and secrets conventions early so application and data teams inherit safer defaults.",
+          steps: ["Cloud IAM", "Cloud Logging", "Cloud Monitoring", "Secret Manager", "Security Command Center"]
+        },
+        {
+          kicker: "Integration path",
+          title: "Event-driven application fabric",
+          copy: "Use messaging, workflows, and managed runtimes to stitch services together before point-to-point integrations sprawl.",
+          steps: ["Pub/Sub", "Eventarc", "Cloud Run", "Workflows", "Cloud Tasks"]
+        }
+      ],
+      referenceLinks: [
+        {
+          title: "Google Cloud product list",
+          copy: "The official product inventory that anchors the service catalog on this page.",
+          url: "https://cloud.google.com/docs/product-list"
+        },
+        {
+          title: "Google Cloud products directory",
+          copy: "The main product landing page with vendor-owned service overviews.",
+          url: "https://cloud.google.com/products"
+        },
+        {
+          title: "Google Cloud documentation home",
+          copy: "The central documentation entry point for guides, tutorials, and API references.",
+          url: "https://cloud.google.com/docs"
+        }
+      ]
+    };
+  </script><script src="./catalog-data.js"></script><script src="../service-catalog-viewer.js"></script></body></html>
