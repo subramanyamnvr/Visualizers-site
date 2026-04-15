@@ -1,1 +1,771 @@
-<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><script src="../theme-sync.js"></script><script src="../visualizer-shell.js"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Backend API & Auth Atlas</title><meta name="description" content="A visual study atlas for backend APIs and auth covering HTTP, REST versus gRPC, auth flows, sessions, rate limiting, caching, and service boundaries."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="../concept-visualizer.css"></head><body class="concept-visualizer"><div class="shell"><header class="site-header"><div class="brand"><div class="brand-mark" aria-hidden="true"><svg viewbox="0 0 48 48" width="24" height="24" fill="none"><rect x="7" y="10" width="34" height="28" rx="8" fill="#15304a" stroke="#2563eb"></rect><path d="M15 20h18M15 28h12" stroke="#dbeafe" stroke-width="2.4" stroke-linecap="round"></path><circle cx="34" cy="14" r="5" fill="#14b8a6"></circle></svg></div><div><h1>Backend API &amp; Auth Atlas</h1><p>Protocols, contracts, identity, and traffic control</p></div></div><button class="theme-btn" id="themeBtn" aria-label="Toggle theme"><svg viewbox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.6A9 9 0 1 1 11.4 3 7 7 0 0 0 21 12.6"></path></svg></button></header><section class="hero"><div><div class="eyebrow">Backend Atlas</div><h2>APIs are agreements about shape, identity, error handling, and traffic behavior, not only endpoints.</h2><p> Strong backend design connects transport choices, request contracts, auth and session flows, rate limiting, caching, and observability into one product surface. This page is organized around those operating decisions. </p><div class="hero-links"><span class="tag">HTTP</span><span class="tag">REST</span><span class="tag">gRPC</span><span class="tag">OAuth</span><span class="tag">rate limiting</span><span class="tag">caching</span></div><div class="stat-grid"><article class="card"><div class="label">Protocol layer</div><div class="value">HTTP</div><p>Methods, headers, status codes, and caching semantics shape the contract before business logic runs.</p></article><article class="card"><div class="label">Interface style</div><div class="value">Contract</div><p>REST, gRPC, and internal RPC styles each optimize for different teams and latency expectations.</p></article><article class="card"><div class="label">Identity layer</div><div class="value">Auth</div><p>Sessions, tokens, delegated access, and service identity solve different trust problems.</p></article><article class="card"><div class="label">Protection layer</div><div class="value">Controls</div><p>Rate limiting, caching, idempotency, and tracing keep the API usable under real traffic.</p></article></div></div><div class="hero-visual" aria-hidden="true"><svg viewbox="0 0 560 340"><rect x="18" y="18" width="524" height="304" rx="20" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"></rect><text x="42" y="56" fill="currentColor" font-family="Inter" font-size="20" font-weight="700">Request Flow</text><text x="42" y="82" fill="#8fa9bf" font-family="Inter" font-size="13">client -> gateway -> auth -> service -> cache / db -> response</text><rect x="42" y="118" width="84" height="56" rx="14" fill="#15304a" stroke="#2563eb"></rect><rect x="148" y="118" width="84" height="56" rx="14" fill="#13384a" stroke="#14b8a6"></rect><rect x="254" y="118" width="84" height="56" rx="14" fill="#42330f" stroke="#f59e0b"></rect><rect x="360" y="118" width="84" height="56" rx="14" fill="#3f243d" stroke="#fb7185"></rect><rect x="466" y="118" width="52" height="56" rx="14" fill="#1f3d44" stroke="#22d3ee"></rect><text x="84" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Client</text><text x="190" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Gateway</text><text x="296" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Auth</text><text x="402" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Service</text><text x="492" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="11" font-weight="700">Data</text><path d="M126 146H148M232 146H254M338 146H360M444 146H466" stroke="#70b5ff" stroke-width="5" stroke-linecap="round"></path><text x="62" y="246" fill="#14b8a6" font-family="JetBrains Mono" font-size="12">headers | identity | limits | tracing | cache hints | error contracts</text></svg></div></section><div class="page-layout"><aside class="sidebar-nav" aria-label="Page sections"><div class="sidebar-title">Sections</div><button class="nav-btn active" data-target="overview">Landscape</button><button class="nav-btn" data-target="http-basics">HTTP</button><button class="nav-btn" data-target="rest-grpc">REST vs gRPC</button><button class="nav-btn" data-target="auth-flows">Auth Flows</button><button class="nav-btn" data-target="sessions-tokens">Sessions & Tokens</button><button class="nav-btn" data-target="rate-limiting">Rate Limiting</button><button class="nav-btn" data-target="caching">Caching</button></aside><main class="page-main"><section class="panel active" id="overview"><div class="panel-head"><div><div class="label">API Mindset</div><h3>Backend systems are communication contracts with operational consequences.</h3><p>The useful question is not only how to expose functionality, but how the interface behaves under retries, abuse, version drift, and permission boundaries.</p></div></div><div class="grid-3"><article class="card"><div class="label">A. Interface</div><h4>Shape the contract</h4><p>Resource naming, status codes, schemas, and error models set developer expectations.</p></article><article class="card"><div class="label">B. Identity</div><h4>Control access</h4><p>User auth, service auth, scopes, and session lifetime must align with real permissions.</p></article><article class="card"><div class="label">C. Traffic</div><h4>Protect the system</h4><p>Limits, caches, and idempotency stop healthy usage from turning into accidental overload.</p></article></div></section><section class="panel" id="http-basics"><div class="panel-head"><div><div class="label">Transport Foundation</div><h3>HTTP already contains more architecture than many teams realize.</h3><p>Method semantics, headers, cache directives, and status codes are part of the product contract, not incidental wire details.</p></div></div><div class="number-grid"><div class="number-card"><strong>Method semantics</strong><span>`GET` should be safe, `PUT` idempotent, `POST` state-changing by default.</span></div><div class="number-card"><strong>Status codes</strong><span>Use them to explain whether the client should retry, fix input, or ask for permission.</span></div><div class="number-card"><strong>Headers</strong><span>Carry auth, tracing, cache hints, content type, and version cues.</span></div><div class="number-card"><strong>Idempotency</strong><span>Necessary for safe retries on payment-like or create-like actions.</span></div></div></section><section class="panel" id="rest-grpc"><div class="panel-head"><div><div class="label">API Style Choice</div><h3>Choose the interface style that fits the consumers, not the one that sounds more modern.</h3><p>REST is broad and web-friendly; gRPC is strong for typed service-to-service communication and streaming.</p></div></div><article class="card table-card"><table class="study-table"><thead><tr><th>Dimension</th><th>REST</th><th>gRPC</th></tr></thead><tbody><tr><td>Best fit</td><td>Public APIs, browser ecosystems, broad interoperability</td><td>Internal service meshes, strongly typed contracts, streaming</td></tr><tr><td>Payload</td><td>Usually JSON</td><td>Usually protobuf</td></tr><tr><td>Debuggability</td><td>Human-readable and easy to inspect</td><td>More tooling-dependent but compact and structured</td></tr><tr><td>Versioning tension</td><td>Resource and field evolution</td><td>Schema compatibility and generated clients</td></tr></tbody></table></article></section><section class="panel" id="auth-flows"><div class="panel-head"><div><div class="label">Identity Flows</div><h3>Auth flows exist to answer who is acting, on whose behalf, and with which scope.</h3><p>Most confusion comes from mixing user auth, delegated access, and service identity into one vague token story.</p></div></div><div class="grid-2"><article class="card"><h4>Common user-facing flows</h4><div class="study-stack"><div class="study-item">Session-based web login for first-party apps.</div><div class="study-item">OAuth authorization code flow for delegated third-party access.</div><div class="study-item">PKCE for public clients that cannot safely store a secret.</div></div></article><article class="card"><h4>Service-facing flows</h4><div class="study-stack"><div class="study-item">Client credentials for service-to-service trust.</div><div class="study-item">Mutual TLS or workload identity inside infrastructure platforms.</div><div class="study-item">Short-lived credentials to reduce leaked-secret blast radius.</div></div></article></div></section><section class="panel" id="sessions-tokens"><div class="panel-head"><div><div class="label">State Strategy</div><h3>Sessions and tokens solve different trust and revocation tradeoffs.</h3><p>Do not choose solely by trend. Choose based on browser context, revocation needs, and who must validate the identity.</p></div></div><div class="compare-chart"><div class="compare-row"><strong>Server sessions</strong><span>Great for central revocation and browser apps, but require stateful storage.</span><span>central control</span></div><div class="compare-row"><strong>Signed access tokens</strong><span>Portable and scalable, but revocation and over-broad lifetime need care.</span><span>portable trust</span></div><div class="compare-row"><strong>Refresh tokens</strong><span>Extend user continuity while keeping access tokens shorter-lived.</span><span>renewal layer</span></div></div><div class="callout"><strong>Rule of thumb:</strong> store only the minimum claims in tokens and treat authorization checks as a server-side concern, not only a frontend display concern. </div></section><section class="panel" id="rate-limiting"><div class="panel-head"><div><div class="label">Protection Layer</div><h3>Rate limiting is how you express fairness and system protection in traffic terms.</h3><p>The right policy depends on whether you are protecting a single endpoint, a user, an API key, or an entire tenant budget.</p></div></div><div class="grid-3"><article class="card"><h4>Fixed window</h4><p>Simple and cheap, but bursty at the edges.</p></article><article class="card"><h4>Sliding window</h4><p>More accurate fairness, but usually more bookkeeping.</p></article><article class="card"><h4>Token bucket</h4><p>Good when you want controlled bursts with an average sustained rate.</p></article></div><div class="callout"><strong>Design question:</strong> what should happen after the limit is hit: hard reject, queued retry hint, or degraded response path? </div></section><section class="panel" id="caching"><div class="panel-head"><div><div class="label">Read Optimization</div><h3>Caching is powerful because it changes the request path, but that also makes invalidation a correctness problem.</h3><p>Use caches where reads repeat enough to justify the complexity, and be explicit about freshness guarantees.</p></div></div><div class="grid-2"><article class="card"><h4>Where caches appear</h4><div class="bullet-list"><div class="bullet-item">Browser and CDN caches for public or semi-public content.</div><div class="bullet-item">Gateway or service caches for repeated computed responses.</div><div class="bullet-item">Database query caches or materialized read models for expensive joins.</div></div></article><article class="card"><h4>What breaks caches</h4><div class="bullet-list"><div class="bullet-item">Unclear ownership of invalidation triggers.</div><div class="bullet-item">Personalized data stored without the right key boundaries.</div><div class="bullet-item">Assuming stale data is harmless without checking the user journey.</div></div></article></div></section></main></div></div><script src="../concept-visualizer.js"></script></body></html>
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><script src="../theme-sync.js"></script><script src="../visualizer-shell.js"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Backend API & Auth Atlas</title><meta name="description" content="A visual study atlas for backend APIs and auth covering HTTP, REST versus gRPC, auth flows, sessions, rate limiting, caching, and service boundaries."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="../concept-visualizer.css"><style>
+    .api-flow { display: grid; gap: 12px; margin-top: 16px; }
+    .api-flow-step {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.035);
+    }
+    .api-flow-step strong:first-child {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: var(--radius);
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+    .api-flow-step h5 { margin-bottom: 4px; }
+    .api-flow-step p { color: var(--muted); font-size: 0.9rem; }
+    .api-lab {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+      align-items: stretch;
+      margin-top: 16px;
+    }
+    .api-control {
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+      margin-top: 10px;
+    }
+    .api-control label { color: var(--text); font-weight: 700; font-size: 0.88rem; }
+    .api-control select, .api-control input[type="range"] { width: 100%; }
+    .api-control select {
+      min-height: 42px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 0 10px;
+      color: var(--text);
+      background: var(--panel-strong);
+      font: inherit;
+    }
+    .api-preview { min-height: 100%; display: grid; gap: 12px; align-content: start; }
+    .api-output {
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(3, 11, 18, 0.56);
+      overflow: hidden;
+    }
+    [data-theme="light"] .api-output { background: rgba(255, 255, 255, 0.72); }
+    .api-output header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--divider);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+    }
+    .api-output pre { box-shadow: none; border: 0; background: transparent; }
+    .api-meter { display: grid; gap: 10px; margin-top: 8px; }
+    .api-meter-row {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr) 74px;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .api-token-demo { display: grid; gap: 10px; margin-top: 16px; }
+    .api-token-piece {
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      overflow-wrap: anywhere;
+    }
+    .api-token-piece strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+    }
+    .api-state-map {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .api-state {
+      min-height: 112px;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .api-state strong { display: block; margin-bottom: 6px; color: var(--text); }
+    .api-state span { color: var(--muted); font-size: 0.84rem; }
+    .api-checklist { columns: 2; column-gap: 18px; margin-top: 14px; }
+    .api-checklist .bullet-item { break-inside: avoid; margin-bottom: 10px; }
+    .deep-diagram {
+      position: relative;
+      overflow: hidden;
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)),
+        var(--panel);
+      box-shadow: var(--shadow);
+    }
+    .pipeline-viz {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(96px, 1fr));
+      gap: 12px;
+      position: relative;
+      padding: 22px 0 8px;
+    }
+    .pipeline-viz::before {
+      content: "";
+      position: absolute;
+      left: 6%;
+      right: 6%;
+      top: 50px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3), var(--accent-4));
+      opacity: 0.45;
+    }
+    .pipeline-node {
+      position: relative;
+      min-height: 112px;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.045);
+      z-index: 1;
+    }
+    .pipeline-node strong {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      margin-bottom: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+    .pipeline-node span {
+      display: block;
+      color: var(--text);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .pipeline-node small {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .packet {
+      position: absolute;
+      top: 43px;
+      left: 5%;
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 0 0 6px rgba(31, 142, 241, 0.18), 0 0 20px rgba(20, 184, 166, 0.72);
+      animation: packet-run 7s linear infinite;
+      z-index: 2;
+    }
+    .packet.packet-alt {
+      animation-delay: -3.5s;
+      background: var(--accent-3);
+      box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.16), 0 0 20px rgba(245, 158, 11, 0.68);
+    }
+    @keyframes packet-run {
+      0% { transform: translateX(0) scale(0.84); opacity: 0; }
+      8% { opacity: 1; }
+      88% { opacity: 1; }
+      100% { transform: translateX(1120px) scale(1); opacity: 0; }
+    }
+    .status-map {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .status-card {
+      min-height: 132px;
+      padding: 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .status-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-family: var(--font-mono);
+      color: var(--accent-2);
+      font-size: 1.02rem;
+    }
+    .status-card span { color: var(--muted); font-size: 0.84rem; }
+    .swimlane {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .lane {
+      display: grid;
+      grid-template-columns: 128px repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+    .lane-label {
+      display: grid;
+      place-items: center start;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+    .lane-step {
+      min-height: 72px;
+      padding: 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .lane-step.active {
+      color: var(--text);
+      border-color: rgba(20, 184, 166, 0.48);
+      background: rgba(20, 184, 166, 0.08);
+      animation: pulse-step 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse-step {
+      0%, 100% { box-shadow: 0 0 0 rgba(20, 184, 166, 0); }
+      50% { box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.12); }
+    }
+    .state-timeline {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .state-timeline .api-state {
+      position: relative;
+      min-height: 142px;
+    }
+    .state-timeline .api-state::after {
+      content: "";
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 12px;
+      height: 4px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transform-origin: left;
+      animation: state-fill 5s ease-in-out infinite;
+    }
+    @keyframes state-fill {
+      0% { transform: scaleX(0.08); opacity: 0.5; }
+      60% { transform: scaleX(1); opacity: 1; }
+      100% { transform: scaleX(0.08); opacity: 0.5; }
+    }
+    .bucket-visual {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .bucket {
+      position: relative;
+      height: 176px;
+      border-radius: 10px 10px 18px 18px;
+      border: 2px solid rgba(160, 190, 216, 0.35);
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .bucket-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 45%;
+      background: linear-gradient(180deg, rgba(20, 184, 166, 0.7), rgba(31, 142, 241, 0.82));
+      transition: height 180ms ease;
+    }
+    .bucket-drip {
+      position: absolute;
+      left: 50%;
+      top: 10px;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent-3);
+      animation: drip 1.4s linear infinite;
+    }
+    @keyframes drip {
+      0% { transform: translate(-50%, -16px); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translate(-50%, 170px); opacity: 0; }
+    }
+    .ledger {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+    .ledger-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .ledger-row.active {
+      border-color: rgba(20, 184, 166, 0.5);
+      background: rgba(20, 184, 166, 0.08);
+    }
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .toggle-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .toggle-row {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .toggle-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-2);
+      margin-top: 2px;
+    }
+    .toggle-row strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 2px;
+      font-size: 0.88rem;
+    }
+    .result-card {
+      min-height: 100%;
+      padding: 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.018));
+    }
+    .result-card .value {
+      font-size: 2rem;
+      color: var(--accent-2);
+    }
+    .result-card.danger .value { color: var(--accent-4); }
+    .result-card.warn .value { color: var(--accent-3); }
+    .decision-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .decision-pill {
+      padding: 0.45rem 0.62rem;
+      border-radius: 999px;
+      border: 1px solid var(--divider);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .decision-pill.ok {
+      color: var(--accent-2);
+      border-color: rgba(20, 184, 166, 0.38);
+      background: rgba(20, 184, 166, 0.08);
+    }
+    .decision-pill.bad {
+      color: var(--accent-4);
+      border-color: rgba(251, 113, 133, 0.38);
+      background: rgba(251, 113, 133, 0.08);
+    }
+    .mini-timeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .mini-step {
+      min-height: 92px;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--divider);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .mini-step.active {
+      color: var(--text);
+      border-color: rgba(20, 184, 166, 0.5);
+      background: rgba(20, 184, 166, 0.08);
+    }
+    .score-ring {
+      width: 132px;
+      height: 132px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      margin: 8px 0 14px;
+      background: conic-gradient(var(--accent-2) 0deg, rgba(255, 255, 255, 0.08) 0deg);
+      border: 1px solid var(--divider);
+    }
+    .score-ring span {
+      width: 96px;
+      height: 96px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--panel-strong);
+      color: var(--text);
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    @media (max-width: 1040px) {
+      .api-lab, .api-state-map, .pipeline-viz, .status-map, .state-timeline, .bucket-visual, .control-grid, .mini-timeline { grid-template-columns: 1fr; }
+      .pipeline-viz::before, .packet { display: none; }
+      .lane { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 720px) {
+      .api-meter-row { grid-template-columns: 1fr; }
+      .api-checklist { columns: 1; }
+      .ledger-row { grid-template-columns: 1fr; }
+    }
+  </style></head><body class="concept-visualizer"><div class="shell"><header class="site-header"><div class="brand"><div class="brand-mark" aria-hidden="true"><svg viewbox="0 0 48 48" width="24" height="24" fill="none"><rect x="7" y="10" width="34" height="28" rx="8" fill="#15304a" stroke="#2563eb"></rect><path d="M15 20h18M15 28h12" stroke="#dbeafe" stroke-width="2.4" stroke-linecap="round"></path><circle cx="34" cy="14" r="5" fill="#14b8a6"></circle></svg></div><div><h1>Backend API &amp; Auth Atlas</h1><p>Protocols, contracts, identity, and traffic control</p></div></div><button class="theme-btn" id="themeBtn" aria-label="Toggle theme"><svg viewbox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.6A9 9 0 1 1 11.4 3 7 7 0 0 0 21 12.6"></path></svg></button></header><section class="hero"><div><div class="eyebrow">Backend Atlas</div><h2>APIs are agreements about shape, identity, error handling, and traffic behavior, not only endpoints.</h2><p> Strong backend design connects transport choices, request contracts, auth and session flows, rate limiting, caching, and observability into one product surface. This page is organized around those operating decisions. </p><div class="hero-links"><span class="tag">HTTP</span><span class="tag">REST</span><span class="tag">gRPC</span><span class="tag">OAuth</span><span class="tag">rate limiting</span><span class="tag">caching</span></div><div class="stat-grid"><article class="card"><div class="label">Protocol layer</div><div class="value">HTTP</div><p>Methods, headers, status codes, and caching semantics shape the contract before business logic runs.</p></article><article class="card"><div class="label">Interface style</div><div class="value">Contract</div><p>REST, gRPC, and internal RPC styles each optimize for different teams and latency expectations.</p></article><article class="card"><div class="label">Identity layer</div><div class="value">Auth</div><p>Sessions, tokens, delegated access, and service identity solve different trust problems.</p></article><article class="card"><div class="label">Protection layer</div><div class="value">Controls</div><p>Rate limiting, caching, idempotency, and tracing keep the API usable under real traffic.</p></article></div></div><div class="hero-visual" aria-hidden="true"><svg viewbox="0 0 560 340"><rect x="18" y="18" width="524" height="304" rx="20" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"></rect><text x="42" y="56" fill="currentColor" font-family="Inter" font-size="20" font-weight="700">Request Flow</text><text x="42" y="82" fill="#8fa9bf" font-family="Inter" font-size="13">client -> gateway -> auth -> service -> cache / db -> response</text><rect x="42" y="118" width="84" height="56" rx="14" fill="#15304a" stroke="#2563eb"></rect><rect x="148" y="118" width="84" height="56" rx="14" fill="#13384a" stroke="#14b8a6"></rect><rect x="254" y="118" width="84" height="56" rx="14" fill="#42330f" stroke="#f59e0b"></rect><rect x="360" y="118" width="84" height="56" rx="14" fill="#3f243d" stroke="#fb7185"></rect><rect x="466" y="118" width="52" height="56" rx="14" fill="#1f3d44" stroke="#22d3ee"></rect><text x="84" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Client</text><text x="190" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Gateway</text><text x="296" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Auth</text><text x="402" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="13" font-weight="700">Service</text><text x="492" y="151" text-anchor="middle" fill="#edf4fb" font-family="Inter" font-size="11" font-weight="700">Data</text><path d="M126 146H148M232 146H254M338 146H360M444 146H466" stroke="#70b5ff" stroke-width="5" stroke-linecap="round"></path><text x="62" y="246" fill="#14b8a6" font-family="JetBrains Mono" font-size="12">headers | identity | limits | tracing | cache hints | error contracts</text></svg></div></section><div class="page-layout"><aside class="sidebar-nav" aria-label="Page sections"><div class="sidebar-title">Sections</div><button class="nav-btn active" data-target="overview">Landscape</button><button class="nav-btn" data-target="http-basics">HTTP Lab</button><button class="nav-btn" data-target="rest-grpc">REST vs gRPC</button><button class="nav-btn" data-target="auth-flows">OAuth & PKCE</button><button class="nav-btn" data-target="sessions-tokens">Sessions & Tokens</button><button class="nav-btn" data-target="rate-limiting">Rate Limiting</button><button class="nav-btn" data-target="caching">Caching</button><button class="nav-btn" data-target="idempotency">Idempotency</button><button class="nav-btn" data-target="production">Production Review</button></aside><main class="page-main"><section class="panel active" id="overview"><div class="panel-head"><div><div class="label">API Mindset</div><h3>Backend systems are communication contracts with operational consequences.</h3><p>The useful question is not only how to expose functionality, but how the interface behaves under retries, abuse, version drift, and permission boundaries.</p></div></div><div class="grid-3"><article class="card"><div class="label">A. Interface</div><h4>Shape the contract</h4><p>Resource naming, status codes, schemas, and error models set developer expectations.</p></article><article class="card"><div class="label">B. Identity</div><h4>Control access</h4><p>User auth, service auth, scopes, and session lifetime must align with real permissions.</p></article><article class="card"><div class="label">C. Traffic</div><h4>Protect the system</h4><p>Limits, caches, and idempotency stop healthy usage from turning into accidental overload.</p></article></div><div class="api-flow"><div class="api-flow-step"><strong>01</strong><div><h5>Client builds a request</h5><p>The method, path, headers, body, and idempotency key tell the server what kind of action this is.</p></div></div><div class="api-flow-step"><strong>02</strong><div><h5>Edge layer applies cheap controls</h5><p>TLS, CORS, WAF rules, coarse rate limits, request size limits, and trace IDs should happen before business logic.</p></div></div><div class="api-flow-step"><strong>03</strong><div><h5>Auth and policy decide access</h5><p>The system validates the credential, loads the actor, checks tenant and scope, and rejects early when access is invalid.</p></div></div><div class="api-flow-step"><strong>04</strong><div><h5>Service executes with replay safety</h5><p>Writes use transactions, dedupe records, version checks, and clear error contracts so callers know whether to retry.</p></div></div></div><div class="deep-diagram"><div class="label">Animated Request Path</div><h4>One request crosses multiple responsibility boundaries before business logic runs.</h4><div class="pipeline-viz"><span class="packet"></span><span class="packet packet-alt"></span><article class="pipeline-node"><strong>1</strong><span>Client</span><small>Builds method, URL, headers, body, and retry metadata.</small></article><article class="pipeline-node"><strong>2</strong><span>Edge</span><small>Terminates TLS, applies WAF, CORS, body-size, and coarse limits.</small></article><article class="pipeline-node"><strong>3</strong><span>AuthN</span><small>Validates token signature, issuer, audience, expiry, and session state.</small></article><article class="pipeline-node"><strong>4</strong><span>AuthZ</span><small>Checks tenant, role, scope, ownership, and object-level policy.</small></article><article class="pipeline-node"><strong>5</strong><span>Handler</span><small>Validates schema, executes transaction, calls dependencies, records trace.</small></article><article class="pipeline-node"><strong>6</strong><span>Response</span><small>Shapes status code, error model, cache headers, and correlation ID.</small></article></div></div></section><section class="panel" id="http-basics"><div class="panel-head"><div><div class="label">Transport Foundation</div><h3>HTTP already contains more architecture than many teams realize.</h3><p>Method semantics, headers, cache directives, and status codes are part of the product contract, not incidental wire details.</p></div></div><div class="number-grid"><div class="number-card"><strong>Method semantics</strong><span>`GET` should be safe, `PUT` idempotent, `POST` state-changing by default.</span></div><div class="number-card"><strong>Status codes</strong><span>Use them to explain whether the client should retry, fix input, or ask for permission.</span></div><div class="number-card"><strong>Headers</strong><span>Carry auth, tracing, cache hints, content type, and version cues.</span></div><div class="number-card"><strong>Idempotency</strong><span>Necessary for safe retries on payment-like or create-like actions.</span></div></div><div class="api-lab"><article class="card"><h4>Request scenario</h4><div class="api-control"><label for="methodSelect">Method</label><select id="methodSelect"><option value="GET">GET account summary</option><option value="POST">POST create payment</option><option value="PUT">PUT replace profile</option><option value="PATCH">PATCH update email</option><option value="DELETE">DELETE revoke token</option></select></div><div class="api-control"><label for="outcomeSelect">Outcome</label><select id="outcomeSelect"><option value="success">Valid request</option><option value="validation">Validation failed</option><option value="auth">Missing or invalid auth</option><option value="conflict">Version conflict</option><option value="limited">Rate limited</option></select></div><div class="callout"><strong>Design habit:</strong> every endpoint should document whether the client can retry, whether the action is idempotent, and which status codes are expected. </div></article><article class="api-preview"><div class="api-output"><header><span>request</span><span id="requestMeta">safe read</span></header><pre><code id="requestPreview"></code></pre></div><div class="api-output"><header><span>response contract</span><span id="responseMeta">200</span></header><pre><code id="responsePreview"></code></pre></div></article></div><article class="card table-card" style="margin-top:16px"><table class="study-table"><thead><tr><th>Concept</th><th>Good API behavior</th><th>Common mistake</th></tr></thead><tbody><tr><td>Safe methods</td><td>GET and HEAD do not mutate server state from the client perspective.</td><td>Triggering side effects from a link preview or crawler request.</td></tr><tr><td>Idempotent methods</td><td>PUT and DELETE can be repeated and converge to the same resource state.</td><td>Using PUT as a partial update without documenting replacement semantics.</td></tr><tr><td>Status codes</td><td>Codes tell clients whether to fix input, authenticate, retry later, or stop.</td><td>Returning 200 with an error object for every failure.</td></tr><tr><td>Headers</td><td>Auth, content type, correlation ID, idempotency key, and cache hints are first-class.</td><td>Putting operational metadata only inside custom JSON bodies.</td></tr></tbody></table></article><div class="deep-diagram"><div class="label">Status Code Routing</div><h4>Use status codes to tell clients their next move.</h4><div class="status-map"><article class="status-card"><strong>2xx</strong><span>Request succeeded. Client can use the response. For async work, 202 should include a status resource or polling path.</span></article><article class="status-card"><strong>3xx</strong><span>Resource is elsewhere or cached copy can be reused. Redirect behavior matters for auth and method preservation.</span></article><article class="status-card"><strong>4xx</strong><span>Client must change something: authenticate, fix validation, adjust scope, stop replaying, or wait after 429.</span></article><article class="status-card"><strong>409</strong><span>The request may be valid, but current resource state conflicts with it. Version checks and duplicate keys live here.</span></article><article class="status-card"><strong>5xx</strong><span>Server or dependency failed. Clients may retry only when the method and idempotency contract make replay safe.</span></article></div></div></section><section class="panel" id="rest-grpc"><div class="panel-head"><div><div class="label">API Style Choice</div><h3>Choose the interface style that fits the consumers, not the one that sounds more modern.</h3><p>REST is broad and web-friendly; gRPC is strong for typed service-to-service communication and streaming.</p></div></div><article class="card table-card"><table class="study-table"><thead><tr><th>Dimension</th><th>REST</th><th>gRPC</th></tr></thead><tbody><tr><td>Best fit</td><td>Public APIs, browser ecosystems, broad interoperability</td><td>Internal service meshes, strongly typed contracts, streaming</td></tr><tr><td>Payload</td><td>Usually JSON</td><td>Usually protobuf</td></tr><tr><td>Debuggability</td><td>Human-readable and easy to inspect</td><td>More tooling-dependent but compact and structured</td></tr><tr><td>Versioning tension</td><td>Resource and field evolution</td><td>Schema compatibility and generated clients</td></tr></tbody></table></article><div class="grid-3" style="margin-top:16px"><article class="card"><div class="label">Public product API</div><h4>REST is usually the default</h4><p>Good for broad interoperability, HTTP caching, browser tooling, human debugging, and third-party developers.</p><div class="equation">GET /v1/customers/{id}/invoices?status=open</div></article><article class="card"><div class="label">Internal service mesh</div><h4>gRPC fits typed, low-latency calls</h4><p>Good when teams own generated clients, protobuf schemas, streaming, and strict service contracts.</p><div class="equation">BillingService.GetInvoice(InvoiceRequest)</div></article><article class="card"><div class="label">State change broadcast</div><h4>Events fit async propagation</h4><p>Good when consumers should react independently and producers should not wait for every downstream system.</p><div class="equation">invoice.paid.v2</div></article></div><article class="card table-card" style="margin-top:16px"><table class="study-table"><thead><tr><th>Decision lens</th><th>REST</th><th>gRPC</th><th>Events</th></tr></thead><tbody><tr><td>Consumer</td><td>External developers, browsers, mobile apps, broad platforms.</td><td>Internal services with shared tooling and schemas.</td><td>Multiple consumers reacting to a fact after it happens.</td></tr><tr><td>Contract evolution</td><td>Additive JSON fields, URI versioning, media type rules.</td><td>Protobuf compatibility, field numbers, generated clients.</td><td>Schema registry, event versioning, replay compatibility.</td></tr><tr><td>Debugging</td><td>Easy with curl, browser tools, gateway logs.</td><td>Needs gRPC-aware tooling but strong typed traces.</td><td>Needs correlation IDs across producers and consumers.</td></tr><tr><td>Failure behavior</td><td>Caller sees immediate success or failure.</td><td>Caller sees immediate success or failure with typed status.</td><td>Producer succeeds before consumers finish, so reconciliation matters.</td></tr></tbody></table></article><div class="callout"><strong>Practical rule:</strong> public APIs should reflect stable product concepts, not your current internal microservice boundaries. </div><div class="control-grid"><article class="card"><h4>API style chooser</h4><div class="api-control"><label for="consumerSelect">Primary consumer</label><select id="consumerSelect"><option value="public">External developers and browsers</option><option value="internal">Internal services with generated clients</option><option value="async">Many downstream consumers after a fact occurs</option></select></div><div class="api-control"><label for="streamingSelect">Interaction shape</label><select id="streamingSelect"><option value="request">Request / response</option><option value="stream">Streaming or long-lived exchange</option><option value="fanout">Fanout, replay, or audit history</option></select></div><div class="api-control"><label for="debugSelect">Debugging priority</label><select id="debugSelect"><option value="human">Human-readable with curl/browser tools</option><option value="typed">Typed contracts and generated stubs</option><option value="trace">Correlation across async consumers</option></select></div></article><article class="result-card" id="styleResultCard"><div class="label">Recommendation</div><div class="value" id="styleVerdict">REST</div><p id="styleExplanation">A public, request/response API with human debugging needs should usually start with REST.</p><div class="decision-pills" id="stylePills"></div></article></div></section><section class="panel" id="auth-flows"><div class="panel-head"><div><div class="label">Identity Flows</div><h3>Auth flows exist to answer who is acting, on whose behalf, and with which scope.</h3><p>Most confusion comes from mixing user auth, delegated access, and service identity into one vague token story.</p></div></div><div class="grid-2"><article class="card"><h4>Common user-facing flows</h4><div class="study-stack"><div class="study-item">Session-based web login for first-party apps.</div><div class="study-item">OAuth authorization code flow for delegated third-party access.</div><div class="study-item">PKCE for public clients that cannot safely store a secret.</div></div></article><article class="card"><h4>Service-facing flows</h4><div class="study-stack"><div class="study-item">Client credentials for service-to-service trust.</div><div class="study-item">Mutual TLS or workload identity inside infrastructure platforms.</div><div class="study-item">Short-lived credentials to reduce leaked-secret blast radius.</div></div></article></div><div class="grid-2" style="margin-top:16px"><article class="card"><h4>Authorization code with PKCE</h4><div class="api-flow"><div class="api-flow-step"><strong>1</strong><div><h5>App creates verifier and challenge</h5><p>The public client keeps the verifier locally and sends only the derived challenge.</p></div></div><div class="api-flow-step"><strong>2</strong><div><h5>User authenticates at identity provider</h5><p>The app never sees the user's password. It receives an authorization code after consent.</p></div></div><div class="api-flow-step"><strong>3</strong><div><h5>App exchanges code plus verifier</h5><p>The provider checks that the verifier matches the earlier challenge before issuing tokens.</p></div></div><div class="api-flow-step"><strong>4</strong><div><h5>API validates token and scopes</h5><p>The backend checks issuer, audience, signature, expiry, tenant, and permission claims.</p></div></div></div></article><article class="card"><h4>Flow selection guide</h4><div class="study-stack"><div class="study-item"><strong>First-party web app:</strong> session cookie with server-side session storage is often simplest and easiest to revoke.</div><div class="study-item"><strong>SPA or mobile app:</strong> authorization code with PKCE avoids storing a client secret in public code.</div><div class="study-item"><strong>Service-to-service:</strong> client credentials, mTLS, or workload identity. No human user is present.</div><div class="study-item"><strong>Third-party integration:</strong> OAuth scopes and consent boundaries must be visible and revocable.</div></div><div class="callout"><strong>Security boundary:</strong> authentication is not authorization. A valid token still needs a resource-level policy check. </div></article></div><article class="card table-card" style="margin-top:16px"><table class="study-table"><thead><tr><th>Token check</th><th>Question answered</th><th>Bug if skipped</th></tr></thead><tbody><tr><td>Signature</td><td>Was this token issued by a trusted authority?</td><td>Forged or tampered credentials pass.</td></tr><tr><td>Issuer</td><td>Which identity provider issued it?</td><td>Tokens from the wrong tenant or environment pass.</td></tr><tr><td>Audience</td><td>Was this token meant for this API?</td><td>A token minted for another service is reused here.</td></tr><tr><td>Expiry</td><td>Is the credential still valid?</td><td>Old leaked credentials remain useful.</td></tr><tr><td>Scope / policy</td><td>Can this actor perform this action on this resource?</td><td>Users access data they should never see.</td></tr></tbody></table></article><div class="deep-diagram"><div class="label">OAuth Swimlane</div><h4>PKCE protects public clients by binding the authorization code to the app that started the flow.</h4><div class="swimlane" aria-label="OAuth PKCE swimlane"><div class="lane"><div class="lane-label">App</div><div class="lane-step active">Generate verifier and challenge</div><div class="lane-step">Redirect user with challenge</div><div class="lane-step">Receive authorization code</div><div class="lane-step active">Exchange code plus verifier</div></div><div class="lane"><div class="lane-label">User</div><div class="lane-step">Starts login</div><div class="lane-step active">Authenticates and consents</div><div class="lane-step">Returns to app callback</div><div class="lane-step">Uses API through app</div></div><div class="lane"><div class="lane-label">Identity Provider</div><div class="lane-step">Stores challenge</div><div class="lane-step">Issues short code</div><div class="lane-step active">Verifies code and verifier</div><div class="lane-step">Issues access and refresh tokens</div></div><div class="lane"><div class="lane-label">API</div><div class="lane-step">No password involved</div><div class="lane-step">No client secret needed</div><div class="lane-step">Validates token</div><div class="lane-step active">Checks resource policy</div></div></div></div><div class="control-grid"><article class="card"><h4>Authorization decision debugger</h4><div class="toggle-list" id="authToggleList"><label class="toggle-row"><input type="checkbox" data-auth-check="signature" checked><span><strong>Signature valid</strong>Token was signed by a trusted key.</span></label><label class="toggle-row"><input type="checkbox" data-auth-check="issuer" checked><span><strong>Issuer trusted</strong>Token came from the expected identity provider and environment.</span></label><label class="toggle-row"><input type="checkbox" data-auth-check="audience" checked><span><strong>Audience matches API</strong>Token was minted for this backend service.</span></label><label class="toggle-row"><input type="checkbox" data-auth-check="expiry" checked><span><strong>Not expired</strong>Credential lifetime is still valid.</span></label><label class="toggle-row"><input type="checkbox" data-auth-check="scope" checked><span><strong>Scope permits action</strong>Claims include the operation being attempted.</span></label><label class="toggle-row"><input type="checkbox" data-auth-check="tenant" checked><span><strong>Tenant matches route</strong>Actor belongs to the tenant in the URL/resource.</span></label><label class="toggle-row"><input type="checkbox" data-auth-check="resource" checked><span><strong>Resource policy allows</strong>Actor can access this specific object, not just this API.</span></label></div></article><article class="result-card" id="authResultCard"><div class="label">Policy result</div><div class="value" id="authVerdict">ALLOW</div><p id="authExplanation">All credential and resource checks pass. The request can reach business logic.</p><div class="decision-pills" id="authPills"></div></article></div></section><section class="panel" id="sessions-tokens"><div class="panel-head"><div><div class="label">State Strategy</div><h3>Sessions and tokens solve different trust and revocation tradeoffs.</h3><p>Do not choose solely by trend. Choose based on browser context, revocation needs, and who must validate the identity.</p></div></div><div class="compare-chart"><div class="compare-row"><strong>Server sessions</strong><span>Great for central revocation and browser apps, but require stateful storage.</span><span>central control</span></div><div class="compare-row"><strong>Signed access tokens</strong><span>Portable and scalable, but revocation and over-broad lifetime need care.</span><span>portable trust</span></div><div class="compare-row"><strong>Refresh tokens</strong><span>Extend user continuity while keeping access tokens shorter-lived.</span><span>renewal layer</span></div></div><div class="callout"><strong>Rule of thumb:</strong> store only the minimum claims in tokens and treat authorization checks as a server-side concern, not only a frontend display concern. </div><div class="api-token-demo"><div class="api-token-piece"><strong>JWT header</strong> {"alg":"RS256","typ":"JWT","kid":"key-2026-04"} </div><div class="api-token-piece"><strong>JWT payload</strong> {"iss":"https://identity.example.com","aud":"billing-api","sub":"user_914","tenant":"acme","scope":"invoice:read","exp":1776233600} </div><div class="api-token-piece"><strong>Policy decision</strong> allow only if token is valid, tenant matches route tenant, scope includes invoice:read, and user has access to invoice owner. </div></div><div class="grid-2" style="margin-top:16px"><article class="card"><h4>Store browser credentials carefully</h4><div class="bullet-list"><div class="bullet-item">Prefer HttpOnly, Secure, SameSite cookies for first-party browser sessions.</div><div class="bullet-item">Avoid placing long-lived access tokens in localStorage for sensitive apps.</div><div class="bullet-item">Protect state-changing requests from CSRF when cookies authenticate the user.</div></div></article><article class="card"><h4>Keep claims small</h4><div class="bullet-list"><div class="bullet-item">Use tokens for stable identity facts, not constantly changing permissions.</div><div class="bullet-item">Do resource-level authorization on the server for the specific object being accessed.</div><div class="bullet-item">Use short access-token lifetimes when revocation speed matters.</div></div></article></div><div class="deep-diagram"><div class="label">Credential Lifecycle</div><h4>Token systems need a complete lifecycle, not only a login endpoint.</h4><div class="state-timeline"><article class="api-state"><strong>1. Issue</strong><span>Identity provider signs a short-lived access token with issuer, audience, subject, expiry, and scope.</span></article><article class="api-state"><strong>2. Present</strong><span>Client sends it to the API. The API validates it before reading business data.</span></article><article class="api-state"><strong>3. Authorize</strong><span>Server combines claims with tenant, ownership, role, and resource state.</span></article><article class="api-state"><strong>4. Refresh</strong><span>Refresh token renews access without keeping the access token long-lived.</span></article><article class="api-state"><strong>5. Revoke</strong><span>Logout, password reset, device removal, or compromise must invalidate future access.</span></article></div></div></section><section class="panel" id="rate-limiting"><div class="panel-head"><div><div class="label">Protection Layer</div><h3>Rate limiting is how you express fairness and system protection in traffic terms.</h3><p>The right policy depends on whether you are protecting a single endpoint, a user, an API key, or an entire tenant budget.</p></div></div><div class="grid-3"><article class="card"><h4>Fixed window</h4><p>Simple and cheap, but bursty at the edges.</p></article><article class="card"><h4>Sliding window</h4><p>More accurate fairness, but usually more bookkeeping.</p></article><article class="card"><h4>Token bucket</h4><p>Good when you want controlled bursts with an average sustained rate.</p></article></div><div class="callout"><strong>Design question:</strong> what should happen after the limit is hit: hard reject, queued retry hint, or degraded response path? </div><div class="api-lab"><article class="card"><h4>Token bucket simulator</h4><div class="api-control"><label for="burstRange">Burst capacity: <span id="burstValue">20</span> requests</label><input id="burstRange" type="range" min="5" max="60" value="20"></div><div class="api-control"><label for="rateRange">Refill rate: <span id="rateValue">10</span> requests/sec</label><input id="rateRange" type="range" min="1" max="40" value="10"></div><div class="api-control"><label for="trafficRange">Incoming traffic: <span id="trafficValue">18</span> requests/sec</label><input id="trafficRange" type="range" min="1" max="80" value="18"></div></article><article class="card"><h4 id="limitVerdict">Controlled burst, then steady acceptance</h4><p id="limitExplanation">The bucket can absorb short spikes because burst capacity is higher than incoming pressure.</p><div class="bucket-visual"><div class="bucket" aria-hidden="true"><span class="bucket-drip"></span><div class="bucket-fill" id="bucketFill"></div></div><div><h5>How to read the bucket</h5><p>Refill rate is the steady budget. Burst capacity is stored credit. Incoming traffic spends tokens. When the bucket empties, the gateway rejects, queues, or degrades the request.</p></div></div><div class="api-meter"><div class="api-meter-row"><span>Accepted now</span><div class="bar-track"><div class="bar-fill" id="acceptedBar" style="width: 55%"></div></div><strong id="acceptedValue">10/s</strong></div><div class="api-meter-row"><span>Rejected or queued</span><div class="bar-track"><div class="bar-fill" id="rejectedBar" style="width: 40%"></div></div><strong id="rejectedValue">8/s</strong></div><div class="api-meter-row"><span>Spike tolerance</span><div class="bar-track"><div class="bar-fill" id="burstBar" style="width: 33%"></div></div><strong id="burstSeconds">1.1s</strong></div></div><div class="callout"><strong>Return contract:</strong> `429 Too Many Requests` should include a retry hint when the client can safely wait and try again. </div></article></div></section><section class="panel" id="caching"><div class="panel-head"><div><div class="label">Read Optimization</div><h3>Caching is powerful because it changes the request path, but that also makes invalidation a correctness problem.</h3><p>Use caches where reads repeat enough to justify the complexity, and be explicit about freshness guarantees.</p></div></div><div class="grid-2"><article class="card"><h4>Where caches appear</h4><div class="bullet-list"><div class="bullet-item">Browser and CDN caches for public or semi-public content.</div><div class="bullet-item">Gateway or service caches for repeated computed responses.</div><div class="bullet-item">Database query caches or materialized read models for expensive joins.</div></div></article><article class="card"><h4>What breaks caches</h4><div class="bullet-list"><div class="bullet-item">Unclear ownership of invalidation triggers.</div><div class="bullet-item">Personalized data stored without the right key boundaries.</div><div class="bullet-item">Assuming stale data is harmless without checking the user journey.</div></div></article></div><div class="api-state-map"><article class="api-state"><strong>Browser</strong><span>Good for static assets and user-local reuse. Dangerous for sensitive personalized data.</span></article><article class="api-state"><strong>CDN / edge</strong><span>Great for public content, media, docs, and anonymous product data with clear TTLs.</span></article><article class="api-state"><strong>Gateway</strong><span>Can cache shared API responses, enforce auth-aware keys, and absorb repeated reads.</span></article><article class="api-state"><strong>Service / data</strong><span>Useful for computed views and expensive joins, but invalidation ownership must be clear.</span></article></div><article class="card table-card" style="margin-top:16px"><table class="study-table"><thead><tr><th>Header / pattern</th><th>Meaning</th><th>Use when</th></tr></thead><tbody><tr><td>Cache-Control: public, max-age=3600</td><td>Shared caches may store it for one hour.</td><td>Content is identical for all users and safe to reuse.</td></tr><tr><td>Cache-Control: private</td><td>Only the user's client should store it.</td><td>The response is user-specific but can be reused locally.</td></tr><tr><td>ETag / If-None-Match</td><td>Client asks if its copy is still current.</td><td>Resources change occasionally and bandwidth matters.</td></tr><tr><td>stale-while-revalidate</td><td>Serve stale content while refreshing in the background.</td><td>Freshness can lag briefly in exchange for low latency.</td></tr><tr><td>Cache key includes tenant/user</td><td>Separates personalized data by access boundary.</td><td>Responses vary by identity, tenant, region, or permission.</td></tr></tbody></table></article><div class="deep-diagram"><div class="label">Invalidation Path</div><h4>Freshness bugs appear when writes and cached reads do not share an ownership rule.</h4><div class="pipeline-viz"><span class="packet"></span><article class="pipeline-node"><strong>1</strong><span>Write</span><small>User changes profile, role, price, or document state.</small></article><article class="pipeline-node"><strong>2</strong><span>Commit</span><small>Database transaction records new version and emits change fact.</small></article><article class="pipeline-node"><strong>3</strong><span>Invalidate</span><small>Cache key, tag, tenant key, or CDN surrogate key is removed.</small></article><article class="pipeline-node"><strong>4</strong><span>Rebuild</span><small>Next read recomputes or rehydrates from the source of truth.</small></article><article class="pipeline-node"><strong>5</strong><span>Serve</span><small>Response includes ETag, max-age, private/public, and vary rules.</small></article><article class="pipeline-node"><strong>6</strong><span>Observe</span><small>Track hit ratio, stale reads, purge failures, and key cardinality.</small></article></div></div><div class="control-grid"><article class="card"><h4>Cache key builder</h4><p>Toggle every dimension that changes what the response means. Missing dimensions become data-leak or stale-read risk.</p><div class="toggle-list"><label class="toggle-row"><input type="checkbox" data-cache-dim="resource" checked disabled><span><strong>Resource ID</strong>The base object being fetched.</span></label><label class="toggle-row"><input type="checkbox" data-cache-dim="tenant"><span><strong>Tenant</strong>Separates customers or organizations.</span></label><label class="toggle-row"><input type="checkbox" data-cache-dim="user"><span><strong>User</strong>Needed when response differs by viewer.</span></label><label class="toggle-row"><input type="checkbox" data-cache-dim="permission"><span><strong>Permission version</strong>Needed when auth changes can alter visible fields.</span></label><label class="toggle-row"><input type="checkbox" data-cache-dim="locale"><span><strong>Locale / currency</strong>Needed for localized or priced responses.</span></label></div></article><article class="result-card warn" id="cacheResultCard"><div class="label">Generated key</div><div class="value" id="cacheVerdict">RISK</div><p id="cacheKeyPreview">product:42</p><p id="cacheExplanation">This key only separates by resource. Add tenant/user/permission dimensions if the response is personalized or authorization-sensitive.</p><div class="decision-pills" id="cachePills"></div></article></div></section><section class="panel" id="idempotency"><div class="panel-head"><div><div class="label">Retry Safety</div><h3>Idempotency is how APIs survive duplicate attempts without duplicate business effects.</h3><p> The network can fail after the server commits a change but before the client receives the response. Payment, order, booking, and invite endpoints need a replay story. </p></div></div><div class="grid-2"><article class="card"><h4>Payment create with idempotency key</h4><div class="api-flow"><div class="api-flow-step"><strong>1</strong><div><h5>Client sends unique key</h5><p>`Idempotency-Key: pay_2026_04_15_abc123` travels with the create request.</p></div></div><div class="api-flow-step"><strong>2</strong><div><h5>Server checks dedupe store</h5><p>If the key is new, reserve it before charging or committing the business action.</p></div></div><div class="api-flow-step"><strong>3</strong><div><h5>Action commits once</h5><p>The final response is stored with the key after the transaction succeeds.</p></div></div><div class="api-flow-step"><strong>4</strong><div><h5>Retry returns same result</h5><p>If the client retries, the server returns the original outcome instead of charging again.</p></div></div></div></article><article class="card"><h4>Failure decisions</h4><div class="study-stack"><div class="study-item"><strong>Same key, same payload:</strong> return the original response.</div><div class="study-item"><strong>Same key, different payload:</strong> reject as a client conflict.</div><div class="study-item"><strong>Key reserved, action still running:</strong> return pending or ask the client to retry later.</div><div class="study-item"><strong>Key expired:</strong> document the retention window so clients know the risk.</div></div><div class="code-card" style="margin-top:14px"><div class="code-header"><span>minimal contract</span><span>HTTP</span></div><pre><code>POST /v1/payments
+Idempotency-Key: pay_abc123
+
+{
+  "invoice_id": "inv_42",
+  "amount": 2499,
+  "currency": "USD"
+}</code></pre></div><div class="ledger" aria-label="Idempotency ledger example"><div class="ledger-row"><strong>key</strong><strong>fingerprint</strong><strong>stored result</strong></div><div class="ledger-row active"><span>pay_abc123</span><span>sha256(invoice, amount)</span><span>201 pay_778</span></div><div class="ledger-row"><span>pay_abc123</span><span>same payload</span><span>return 201 pay_778</span></div><div class="ledger-row"><span>pay_abc123</span><span>different amount</span><span>409 conflict</span></div></div></article></div><div class="deep-diagram"><div class="label">Duplicate Request State Machine</div><h4>The server should reserve the key before the dangerous side effect.</h4><div class="state-timeline"><article class="api-state"><strong>Received</strong><span>Validate key format, tenant, route, and payload hash.</span></article><article class="api-state"><strong>Reserved</strong><span>Insert key with pending state inside a transaction or strongly consistent store.</span></article><article class="api-state"><strong>Executing</strong><span>Charge card, create order, send invite, or perform the one-time action.</span></article><article class="api-state"><strong>Stored</strong><span>Persist final status code and response body for replay.</span></article><article class="api-state"><strong>Replayed</strong><span>Return original result for matching retries; reject mismatched payloads.</span></article></div></div><div class="control-grid"><article class="card"><h4>Replay outcome simulator</h4><div class="api-control"><label for="idempotencyScenario">Retry scenario</label><select id="idempotencyScenario"><option value="same">Same key, same payload after timeout</option><option value="different">Same key, different payload</option><option value="pending">Same key while original request is still running</option><option value="expired">Same key after retention window expired</option></select></div><div class="mini-timeline" id="idemTimeline"><article class="mini-step active">Receive key</article><article class="mini-step active">Lookup ledger</article><article class="mini-step active">Compare payload</article><article class="mini-step active">Return stored result</article></div></article><article class="result-card" id="idemResultCard"><div class="label">Server response</div><div class="value" id="idemVerdict">201</div><p id="idemExplanation">The retry has the same key and same payload, so the server returns the original successful response without repeating the side effect.</p><div class="decision-pills" id="idemPills"></div></article></div></section><section class="panel" id="production"><div class="panel-head"><div><div class="label">Production Review</div><h3>A production API review should read like an incident-prevention checklist.</h3><p> Before launch, review the API from the perspective of an SDK user, an attacker, an overloaded system, a future migration, and an on-call engineer debugging a bad request at 2 AM. </p></div></div><div class="api-checklist"><div class="bullet-item">Endpoint names reflect stable product resources, not internal class names.</div><div class="bullet-item">Every write endpoint has a documented retry and idempotency behavior.</div><div class="bullet-item">Error responses include machine-readable codes and human-readable messages.</div><div class="bullet-item">Auth checks validate signature, issuer, audience, expiry, tenant, scope, and resource policy.</div><div class="bullet-item">Pagination is stable under concurrent inserts or documents the consistency tradeoff.</div><div class="bullet-item">Rate limits are keyed by actor, tenant, API key, or endpoint according to the protected resource.</div><div class="bullet-item">Cache keys include every dimension that can change the response.</div><div class="bullet-item">PII and secrets are redacted from logs, traces, metrics, and client-visible errors.</div><div class="bullet-item">Versioning rules explain additive fields, breaking changes, deprecations, and sunset dates.</div><div class="bullet-item">Correlation IDs connect gateway logs, service logs, database queries, and downstream calls.</div></div><div class="grid-3" style="margin-top:16px"><article class="card"><h4>Client contract tests</h4><p>Lock down status codes, required fields, optional fields, pagination, auth failures, and retry outcomes.</p></article><article class="card"><h4>Abuse tests</h4><p>Test missing auth, wrong tenant, huge bodies, fast retries, repeated idempotency keys, and malformed content types.</p></article><article class="card"><h4>Observability tests</h4><p>Confirm logs explain who called, what resource was touched, which policy ran, and why the response happened.</p></article></div><div class="callout"><strong>Final question:</strong> if this endpoint starts returning wrong data tomorrow, can the team identify whether the cause is contract drift, auth policy, cache keying, retry behavior, or a downstream dependency? </div><div class="control-grid"><article class="card"><h4>Launch readiness scorer</h4><div class="toggle-list"><label class="toggle-row"><input type="checkbox" data-ready-check checked><span><strong>Contract tests</strong>Status codes, schema, pagination, and error shape are tested.</span></label><label class="toggle-row"><input type="checkbox" data-ready-check checked><span><strong>Auth abuse tests</strong>Wrong tenant, missing scope, expired token, and object access are tested.</span></label><label class="toggle-row"><input type="checkbox" data-ready-check><span><strong>Retry tests</strong>Duplicate writes, timeout replay, and idempotency conflicts are tested.</span></label><label class="toggle-row"><input type="checkbox" data-ready-check><span><strong>Cache tests</strong>Private/shared cache keys and invalidation paths are tested.</span></label><label class="toggle-row"><input type="checkbox" data-ready-check checked><span><strong>Observability</strong>Trace ID, actor, resource, policy result, and dependency errors are visible.</span></label><label class="toggle-row"><input type="checkbox" data-ready-check><span><strong>Versioning plan</strong>Breaking changes, deprecation, and sunset rules are documented.</span></label></div></article><article class="result-card warn" id="readyResultCard"><div class="label">Readiness</div><div class="score-ring" id="readyRing"><span id="readyScore">50%</span></div><p id="readyExplanation">Core behavior exists, but retry, cache, and versioning controls still need proof before launch.</p><div class="decision-pills" id="readyPills"></div></article></div></section></main></div></div><script src="../concept-visualizer.js"></script><script>
+    (function () {
+      const requestPreview = document.getElementById("requestPreview");
+      const responsePreview = document.getElementById("responsePreview");
+      const requestMeta = document.getElementById("requestMeta");
+      const responseMeta = document.getElementById("responseMeta");
+      const methodSelect = document.getElementById("methodSelect");
+      const outcomeSelect = document.getElementById("outcomeSelect");
+
+      const requests = {
+        GET: {
+          meta: "safe read",
+          request: "GET /v1/accounts/acct_42/summary HTTP/1.1\nAuthorization: Bearer <access-token>\nAccept: application/json\nX-Request-ID: req_9fb2",
+          success: [200, "{\n  \"account_id\": \"acct_42\",\n  \"balance\": 18420,\n  \"currency\": \"USD\",\n  \"as_of\": \"2026-04-15T09:30:00Z\"\n}"]
+        },
+        POST: {
+          meta: "side effect",
+          request: "POST /v1/payments HTTP/1.1\nAuthorization: Bearer <access-token>\nContent-Type: application/json\nIdempotency-Key: pay_abc123\n\n{\n  \"invoice_id\": \"inv_42\",\n  \"amount\": 2499,\n  \"currency\": \"USD\"\n}",
+          success: [201, "{\n  \"payment_id\": \"pay_778\",\n  \"status\": \"created\",\n  \"dedupe_key\": \"pay_abc123\"\n}"]
+        },
+        PUT: {
+          meta: "idempotent replace",
+          request: "PUT /v1/users/usr_42/profile HTTP/1.1\nAuthorization: Bearer <access-token>\nIf-Match: \"profile-v7\"\nContent-Type: application/json\n\n{\n  \"display_name\": \"Maya Rao\",\n  \"timezone\": \"Asia/Kolkata\"\n}",
+          success: [200, "{\n  \"user_id\": \"usr_42\",\n  \"version\": \"profile-v8\",\n  \"updated\": true\n}"]
+        },
+        PATCH: {
+          meta: "partial update",
+          request: "PATCH /v1/users/usr_42/email HTTP/1.1\nAuthorization: Bearer <access-token>\nContent-Type: application/json\n\n{\n  \"email\": \"maya@example.com\"\n}",
+          success: [202, "{\n  \"status\": \"verification_required\",\n  \"email\": \"maya@example.com\"\n}"]
+        },
+        DELETE: {
+          meta: "idempotent removal",
+          request: "DELETE /v1/tokens/tok_42 HTTP/1.1\nAuthorization: Bearer <access-token>\nX-Request-ID: req_aa91",
+          success: [204, ""]
+        }
+      };
+
+      const failures = {
+        validation: [422, "{\n  \"error\": {\n    \"code\": \"invalid_request\",\n    \"message\": \"amount must be greater than zero\",\n    \"field\": \"amount\"\n  }\n}"],
+        auth: [401, "{\n  \"error\": {\n    \"code\": \"unauthorized\",\n    \"message\": \"missing, expired, or invalid access token\"\n  }\n}"],
+        conflict: [409, "{\n  \"error\": {\n    \"code\": \"version_conflict\",\n    \"message\": \"resource changed since the client last read it\",\n    \"current_version\": \"profile-v8\"\n  }\n}"],
+        limited: [429, "{\n  \"error\": {\n    \"code\": \"rate_limited\",\n    \"message\": \"tenant write budget exceeded\",\n    \"retry_after_seconds\": 30\n  }\n}"]
+      };
+
+      function updateHttpLab() {
+        if (!requestPreview || !responsePreview || !methodSelect || !outcomeSelect) return;
+        const scenario = requests[methodSelect.value];
+        const response = outcomeSelect.value === "success" ? scenario.success : failures[outcomeSelect.value];
+        requestMeta.textContent = scenario.meta;
+        responseMeta.textContent = String(response[0]);
+        requestPreview.textContent = scenario.request;
+        responsePreview.textContent = response[1] || "(empty response body)";
+      }
+
+      methodSelect?.addEventListener("change", updateHttpLab);
+      outcomeSelect?.addEventListener("change", updateHttpLab);
+      updateHttpLab();
+
+      const burstRange = document.getElementById("burstRange");
+      const rateRange = document.getElementById("rateRange");
+      const trafficRange = document.getElementById("trafficRange");
+      const burstValue = document.getElementById("burstValue");
+      const rateValue = document.getElementById("rateValue");
+      const trafficValue = document.getElementById("trafficValue");
+      const acceptedBar = document.getElementById("acceptedBar");
+      const rejectedBar = document.getElementById("rejectedBar");
+      const burstBar = document.getElementById("burstBar");
+      const bucketFill = document.getElementById("bucketFill");
+      const acceptedValue = document.getElementById("acceptedValue");
+      const rejectedValue = document.getElementById("rejectedValue");
+      const burstSeconds = document.getElementById("burstSeconds");
+      const limitVerdict = document.getElementById("limitVerdict");
+      const limitExplanation = document.getElementById("limitExplanation");
+
+      function updateLimitLab() {
+        if (!burstRange || !rateRange || !trafficRange) return;
+        const burst = Number(burstRange.value);
+        const rate = Number(rateRange.value);
+        const traffic = Number(trafficRange.value);
+        const accepted = Math.min(rate, traffic);
+        const rejected = Math.max(0, traffic - rate);
+        const spikeSeconds = rejected > 0 ? burst / rejected : burst / Math.max(traffic, 1);
+
+        burstValue.textContent = String(burst);
+        rateValue.textContent = String(rate);
+        trafficValue.textContent = String(traffic);
+        acceptedValue.textContent = accepted + "/s";
+        rejectedValue.textContent = rejected + "/s";
+        burstSeconds.textContent = spikeSeconds.toFixed(1) + "s";
+
+        acceptedBar.style.width = Math.min(100, (accepted / Math.max(traffic, 1)) * 100) + "%";
+        rejectedBar.style.width = Math.min(100, (rejected / Math.max(traffic, 1)) * 100) + "%";
+        burstBar.style.width = Math.min(100, (burst / 60) * 100) + "%";
+        if (bucketFill) {
+          const fill = rejected === 0 ? 82 : Math.max(16, Math.min(82, (rate / Math.max(traffic, 1)) * 82));
+          bucketFill.style.height = fill + "%";
+        }
+
+        if (rejected === 0) {
+          limitVerdict.textContent = "Traffic fits within the sustained budget";
+          limitExplanation.textContent = "The refill rate is at least as high as incoming traffic, so the bucket does not drain during steady state.";
+        } else if (spikeSeconds >= 3) {
+          limitVerdict.textContent = "Short spike is absorbed, sustained spike is limited";
+          limitExplanation.textContent = "Burst capacity gives clients a grace period, but sustained traffic above refill rate will eventually receive 429 responses.";
+        } else {
+          limitVerdict.textContent = "Limit is too tight for this traffic shape";
+          limitExplanation.textContent = "The bucket drains quickly. Raise capacity, raise refill rate, queue work, or move expensive operations behind async processing.";
+        }
+      }
+
+      [burstRange, rateRange, trafficRange].forEach((control) => {
+        control?.addEventListener("input", updateLimitLab);
+      });
+      updateLimitLab();
+
+      const consumerSelect = document.getElementById("consumerSelect");
+      const streamingSelect = document.getElementById("streamingSelect");
+      const debugSelect = document.getElementById("debugSelect");
+      const styleResultCard = document.getElementById("styleResultCard");
+      const styleVerdict = document.getElementById("styleVerdict");
+      const styleExplanation = document.getElementById("styleExplanation");
+      const stylePills = document.getElementById("stylePills");
+
+      function renderPills(root, items) {
+        if (!root) return;
+        root.innerHTML = items.map((item) => `<span class="decision-pill ${item.ok ? "ok" : "bad"}">${item.label}</span>`).join("");
+      }
+
+      function updateStyleChooser() {
+        if (!consumerSelect || !styleVerdict) return;
+        const consumer = consumerSelect.value;
+        const shape = streamingSelect.value;
+        const debug = debugSelect.value;
+        const scores = { REST: 0, gRPC: 0, Events: 0 };
+
+        if (consumer === "public") scores.REST += 3;
+        if (consumer === "internal") scores.gRPC += 3;
+        if (consumer === "async") scores.Events += 3;
+        if (shape === "request") scores.REST += 1;
+        if (shape === "stream") scores.gRPC += 2;
+        if (shape === "fanout") scores.Events += 2;
+        if (debug === "human") scores.REST += 2;
+        if (debug === "typed") scores.gRPC += 2;
+        if (debug === "trace") scores.Events += 2;
+
+        const winner = Object.entries(scores).sort((a, b) => b[1] - a[1])[0][0];
+        styleVerdict.textContent = winner;
+        styleResultCard.classList.toggle("warn", false);
+        styleResultCard.classList.toggle("danger", false);
+        const explanations = {
+          REST: "This shape favors a stable, human-debuggable resource contract with broad client compatibility.",
+          gRPC: "This shape favors typed service contracts, generated clients, and efficient internal communication.",
+          Events: "This shape favors asynchronous fanout, replayable facts, and decoupled downstream consumers."
+        };
+        styleExplanation.textContent = explanations[winner];
+        renderPills(stylePills, [
+          { label: `REST ${scores.REST}`, ok: winner === "REST" },
+          { label: `gRPC ${scores.gRPC}`, ok: winner === "gRPC" },
+          { label: `Events ${scores.Events}`, ok: winner === "Events" }
+        ]);
+      }
+
+      [consumerSelect, streamingSelect, debugSelect].forEach((control) => {
+        control?.addEventListener("change", updateStyleChooser);
+      });
+      updateStyleChooser();
+
+      const authChecks = Array.from(document.querySelectorAll("[data-auth-check]"));
+      const authResultCard = document.getElementById("authResultCard");
+      const authVerdict = document.getElementById("authVerdict");
+      const authExplanation = document.getElementById("authExplanation");
+      const authPills = document.getElementById("authPills");
+
+      function updateAuthDebugger() {
+        if (!authVerdict) return;
+        const failed = authChecks.filter((check) => !check.checked).map((check) => check.dataset.authCheck);
+        authResultCard.classList.toggle("danger", failed.length > 0);
+        authResultCard.classList.toggle("warn", false);
+        authVerdict.textContent = failed.length ? "DENY" : "ALLOW";
+        authExplanation.textContent = failed.length
+          ? `Stop before business logic. Failed checks: ${failed.join(", ")}.`
+          : "All credential and resource checks pass. The request can reach business logic.";
+        renderPills(authPills, authChecks.map((check) => ({
+          label: check.dataset.authCheck,
+          ok: check.checked
+        })));
+      }
+
+      authChecks.forEach((check) => check.addEventListener("change", updateAuthDebugger));
+      updateAuthDebugger();
+
+      const cacheDims = Array.from(document.querySelectorAll("[data-cache-dim]"));
+      const cacheResultCard = document.getElementById("cacheResultCard");
+      const cacheVerdict = document.getElementById("cacheVerdict");
+      const cacheKeyPreview = document.getElementById("cacheKeyPreview");
+      const cacheExplanation = document.getElementById("cacheExplanation");
+      const cachePills = document.getElementById("cachePills");
+
+      function updateCacheBuilder() {
+        if (!cacheVerdict) return;
+        const chosen = cacheDims.filter((dim) => dim.checked).map((dim) => dim.dataset.cacheDim);
+        const key = ["product:42"]
+          .concat(chosen.filter((dim) => dim !== "resource").map((dim) => `${dim}:{${dim}_id}`))
+          .join("|");
+        const hasTenant = chosen.includes("tenant");
+        const hasUser = chosen.includes("user");
+        const hasPermission = chosen.includes("permission");
+        const safe = hasTenant && (hasUser || hasPermission);
+
+        cacheKeyPreview.textContent = key;
+        cacheVerdict.textContent = safe ? "SAFER" : "RISK";
+        cacheResultCard.classList.toggle("warn", !safe);
+        cacheResultCard.classList.toggle("danger", !hasTenant && (hasUser || hasPermission));
+        cacheExplanation.textContent = safe
+          ? "This key separates tenant and viewer/permission-sensitive variants, which is safer for personalized API responses."
+          : "This key is probably too broad for personalized or authorization-sensitive data. Add tenant plus user or permission version.";
+        renderPills(cachePills, cacheDims.map((dim) => ({
+          label: dim.dataset.cacheDim,
+          ok: dim.checked
+        })));
+      }
+
+      cacheDims.forEach((dim) => dim.addEventListener("change", updateCacheBuilder));
+      updateCacheBuilder();
+
+      const idempotencyScenario = document.getElementById("idempotencyScenario");
+      const idemResultCard = document.getElementById("idemResultCard");
+      const idemVerdict = document.getElementById("idemVerdict");
+      const idemExplanation = document.getElementById("idemExplanation");
+      const idemPills = document.getElementById("idemPills");
+      const idemTimeline = document.getElementById("idemTimeline");
+
+      function updateIdempotencySimulator() {
+        if (!idempotencyScenario || !idemVerdict) return;
+        const scenario = idempotencyScenario.value;
+        const states = {
+          same: ["Receive key", "Lookup ledger", "Compare payload", "Return stored result"],
+          different: ["Receive key", "Lookup ledger", "Detect mismatch", "Reject conflict"],
+          pending: ["Receive key", "Find pending row", "Avoid duplicate side effect", "Return 202 / retry hint"],
+          expired: ["Receive key", "Ledger miss", "Retention expired", "Treat as new or reject"]
+        };
+        const result = {
+          same: ["201", "The retry has the same key and same payload, so the server returns the original successful response without repeating the side effect.", "ok"],
+          different: ["409", "The key was reused with a different payload. Reject it because replaying would hide a client bug or create corruption.", "danger"],
+          pending: ["202", "The original request is still running. Return pending status or a retry hint instead of starting another side effect.", "warn"],
+          expired: ["422", "The key is outside the retention window. Either reject clearly or document that the operation is no longer deduplicated.", "warn"]
+        };
+        const [code, explanation, tone] = result[scenario];
+        idemVerdict.textContent = code;
+        idemExplanation.textContent = explanation;
+        idemResultCard.classList.toggle("danger", tone === "danger");
+        idemResultCard.classList.toggle("warn", tone === "warn");
+        idemTimeline.innerHTML = states[scenario].map((state, index) => `<article class="mini-step active">${index + 1}. ${state}</article>`).join("");
+        renderPills(idemPills, [
+          { label: "dedupe ledger", ok: scenario !== "expired" },
+          { label: "payload fingerprint", ok: scenario !== "expired" },
+          { label: "no duplicate side effect", ok: scenario !== "expired" && scenario !== "different" },
+          { label: `status ${code}`, ok: tone === "ok" }
+        ]);
+      }
+
+      idempotencyScenario?.addEventListener("change", updateIdempotencySimulator);
+      updateIdempotencySimulator();
+
+      const readyChecks = Array.from(document.querySelectorAll("[data-ready-check]"));
+      const readyResultCard = document.getElementById("readyResultCard");
+      const readyRing = document.getElementById("readyRing");
+      const readyScore = document.getElementById("readyScore");
+      const readyExplanation = document.getElementById("readyExplanation");
+      const readyPills = document.getElementById("readyPills");
+
+      function updateReadiness() {
+        if (!readyScore) return;
+        const done = readyChecks.filter((check) => check.checked).length;
+        const score = Math.round((done / readyChecks.length) * 100);
+        readyScore.textContent = score + "%";
+        readyRing.style.background = `conic-gradient(var(--accent-2) ${score * 3.6}deg, rgba(255, 255, 255, 0.08) 0deg)`;
+        readyResultCard.classList.toggle("danger", score < 50);
+        readyResultCard.classList.toggle("warn", score >= 50 && score < 84);
+        readyExplanation.textContent = score >= 84
+          ? "This endpoint has enough proof to enter a controlled launch or canary."
+          : score >= 50
+            ? "Core behavior exists, but important failure modes still need proof before launch."
+            : "This endpoint is under-tested for production traffic. Add safety, abuse, retry, and observability checks.";
+        renderPills(readyPills, [
+          { label: "contract", ok: readyChecks[0]?.checked },
+          { label: "auth", ok: readyChecks[1]?.checked },
+          { label: "retry", ok: readyChecks[2]?.checked },
+          { label: "cache", ok: readyChecks[3]?.checked },
+          { label: "trace", ok: readyChecks[4]?.checked },
+          { label: "versioning", ok: readyChecks[5]?.checked }
+        ]);
+      }
+
+      readyChecks.forEach((check) => check.addEventListener("change", updateReadiness));
+      updateReadiness();
+    })();
+  </script></body></html>

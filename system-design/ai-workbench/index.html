@@ -307,6 +307,114 @@
       gap: 14px;
     }
 
+    .workbench-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr);
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .workbench-card,
+    .workbench-panel {
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 84%, transparent), var(--panel-2));
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .workbench-panel {
+      display: grid;
+      gap: 14px;
+    }
+
+    .wb-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .wb-head h4 {
+      margin-bottom: 6px;
+      font-size: 1.05rem;
+    }
+
+    .wb-control {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .wb-control label,
+    .wb-toggle-row label {
+      color: var(--muted);
+      font: 0.72rem var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .wb-control input[type="range"] {
+      width: 100%;
+      accent-color: var(--a2);
+    }
+
+    .wb-toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .wb-toggle-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.5rem 0.72rem;
+      border-radius: var(--pill);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .wb-toggle-row input {
+      accent-color: var(--a2);
+    }
+
+    .wb-canvas {
+      width: 100%;
+      min-height: 330px;
+      border-radius: calc(var(--r-lg) - 0.15rem);
+      border: 1px solid var(--divider);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.03), transparent),
+        color-mix(in srgb, var(--panel-2) 90%, transparent);
+    }
+
+    .wb-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .wb-metric {
+      padding: 12px;
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .wb-metric strong {
+      display: block;
+      font-size: 1.12rem;
+      margin-bottom: 4px;
+    }
+
+    .wb-metric span {
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
     .metric-grid {
       grid-template-columns: repeat(2, 1fr);
     }
@@ -686,7 +794,7 @@
         min-width: 100%;
       }
     }
-  </style></head><body><div class="shell"><header class="header"><div class="brand"><div class="brand-mark">SD</div><div><h1>System Design Atlas</h1><p>Scalable systems, interview patterns, and internal mechanics</p></div></div><div class="header-actions"><a class="btn" href="#pattern-studio">Pattern Studio</a><a class="btn" href="#family-explorer">Chapter Explorer</a><a class="btn" href="#playbook">Interview Playbook</a></div></header><section class="hero"><article class="hero-card"><span class="eyebrow">System Design</span><h2>From vague prompt to <span>scalable architecture</span> with reusable design moves.</h2><p class="hero-copy"> This atlas reorganizes the attached system design material into a studyable map of foundations, traffic control, storage partitioning, collaboration systems, geo systems, event platforms, and correctness-critical money flows. Instead of isolated chapter summaries, it shows the internal mechanics that keep repeating: load balancing, caches, queues, indexes, shards, fanout paths, consistency boundaries, and reconciliation loops. </p><div class="tag-row"><span>28 core topics</span><span>7 architecture families</span><span>Interactive canvases</span><span>Internal workings</span></div></article><aside class="hero-side"><div class="metric-grid"><article class="panel"><div class="metric-label">Foundations</div><div class="metric-value">3</div><p>Scope, estimation, and interview framing anchor every later design.</p></article><article class="panel"><div class="metric-label">Design Problems</div><div class="metric-value">25</div><p>From rate limiters and chat to stock exchanges and digital wallets.</p></article><article class="panel"><div class="metric-label">Pattern Families</div><div class="metric-value">7</div><p>Reusable buckets for traffic, content, geo, data platforms, and money systems.</p></article><article class="panel"><div class="metric-label">Recurring Mechanics</div><div class="metric-value">6</div><p>Caches, shards, queues, fanout, geo indexes, and transactional coordination.</p></article></div><article class="mini-card floating"><h4>What changes as systems scale?</h4><p> The request path rarely stays simple for long. Reads split from writes, hot paths move into caches, coordination moves into queues or logs, and correctness-heavy systems begin to care more about ordering than raw throughput. </p></article></aside></section><nav class="quick-nav"><a class="nav-chip active" href="#architecture-engine">Architecture Engine</a><a class="nav-chip" href="#pattern-studio">Pattern Studio</a><a class="nav-chip" href="#family-explorer">Chapter Explorer</a><a class="nav-chip" href="#matrix">Matrix</a><a class="nav-chip" href="#internals">Internal Workings</a><a class="nav-chip" href="#playbook">Playbook</a></nav><section class="section-card" id="architecture-engine"><div class="section-head"><div><div class="section-num">01 - Architecture Engine</div><h3 class="section-title">The system design loop that almost every chapter repeats</h3><p class="section-desc"> The surface area changes from problem to problem, but the structure stays familiar: frame the problem, estimate scale, shape the APIs, choose the data model, isolate the bottlenecks, and then decide where coordination belongs. </p></div><span class="label">Animated map</span></div><div class="grid-2"><article class="canvas-card"><canvas id="engineCanvas" width="1120" height="420"></canvas><p class="caption"> The animated path shows how a design discussion tends to move from problem framing into traffic, state, coordination, and operational tradeoffs. </p></article><article class="detail-card"><h4>The six questions to keep asking</h4><ul class="step-list"><li><div><strong>What is the true scope?</strong><br>Clarify functional and non-functional requirements before drawing architecture.</div></li><li><div><strong>What is the scale envelope?</strong><br>Estimate QPS, storage, growth, hotspots, and how skewed the read-write ratio will be.</div></li><li><div><strong>Where does state live?</strong><br>Pick the data model, partition key, indexing strategy, and write path.</div></li><li><div><strong>What gets cached or precomputed?</strong><br>Read-heavy systems usually win or lose on derivations and locality.</div></li><li><div><strong>Where does coordination belong?</strong><br>Locks, queues, logs, leader election, or optimistic conflict handling each change the failure model.</div></li><li><div><strong>What breaks first?</strong><br>Name the likely hotspots, stale data paths, ordering issues, and recovery loops.</div></li></ul></article></div><div class="roadmap-grid" style="margin-top:18px;"><article class="track-card"><h4>Read-heavy architectures</h4><p>Feeds, autocomplete, maps, video delivery, and short-link redirects bias toward caches, replicas, precomputation, and background rebuild paths.</p></article><article class="track-card"><h4>Realtime collaboration</h4><p>Chat, notifications, nearby friends, and live leaderboards bias toward long-lived connections, fanout discipline, and freshness budgets.</p></article><article class="track-card"><h4>Correctness-critical systems</h4><p>Reservations, wallets, payments, and exchanges care more about idempotency, ordering, and reconciliation than they do about maximum horizontal spread.</p></article></div></section><section class="section-card" id="pattern-studio"><div class="section-head"><div><div class="section-num">02 - Pattern Studio</div><h3 class="section-title">Reusable architecture patterns across the full chapter set</h3><p class="section-desc"> This section groups the full chapter list by system behavior rather than by table of contents. Pick a pattern to see what it optimizes, where it breaks, and which chapter families depend on it most heavily. </p></div><span class="label">Interactive</span></div><div class="tab-row" id="patternTabs"></div><div class="grid-2" style="margin-top:18px;"><article class="detail-card"><div class="detail-topline" id="patternTopline"></div><h4 id="patternTitle"></h4><p id="patternSummary" style="margin-top:10px;"></p><ul class="list" id="patternSteps"></ul><div class="pattern-metrics" id="patternMetrics"></div></article><article class="canvas-card"><canvas id="patternCanvas" width="1120" height="420"></canvas><p class="caption" id="patternCaption"></p></article></div></section><section class="section-card" id="family-explorer"><div class="section-head"><div><div class="section-num">03 - Chapter Explorer</div><h3 class="section-title">Browse the full chapter set by architecture family</h3><p class="section-desc"> The original material spans foundations, infrastructure control, collaboration, geo systems, event platforms, and financial correctness. Use the family tabs to see how the individual problems cluster. </p></div><span class="label">28 topics</span></div><div class="family-tabs" id="familyTabs"></div><div class="grid-2" style="margin-top:18px;"><div class="family-card-grid" id="chapterCards"></div><article class="detail-card"><div class="detail-topline" id="chapterTopline"></div><h4 id="chapterTitle"></h4><p id="chapterSummary" style="margin-top:10px;"></p><div class="detail-grid"><article class="mini-card"><h4>Internal mechanics</h4><p id="chapterInternals"></p></article><article class="mini-card"><h4>Primary failure mode</h4><p id="chapterFailure"></p></article><article class="mini-card"><h4>Scaling shape</h4><p id="chapterScale"></p></article><article class="mini-card"><h4>Interview signal</h4><p id="chapterSignal"></p></article></div></article></div></section><section class="section-card" id="matrix"><div class="section-head"><div><div class="section-num">04 - Design Matrix</div><h3 class="section-title">How the major problem families differ under pressure</h3><p class="section-desc"> This matrix is a compressed memory aid. It translates the chapter set into recurring architectural pressure: what dominates the read path, where coordination lives, what storage shape matters, and which failure mode deserves the deepest explanation. </p></div><span class="label">Comparison</span></div><div class="matrix-list" id="matrixList"></div></section><section class="section-card" id="internals"><div class="section-head"><div><div class="section-num">05 - Internal Workings</div><h3 class="section-title">Mechanics that keep reappearing inside scalable systems</h3><p class="section-desc"> Rate limiters, feed fanout, queue partitions, geospatial indexes, realtime state propagation, and transaction safety are not separate interview tricks. They are the reusable gears behind many later designs. </p></div><span class="label">Deep dive</span></div><div class="mechanic-tabs" id="mechanicTabs"></div><div class="grid-2" style="margin-top:18px;"><article class="canvas-card"><canvas id="mechanicCanvas" width="1120" height="420"></canvas><p class="caption" id="mechanicCaption"></p></article><article class="detail-card"><div class="detail-topline" id="mechanicTopline"></div><h4 id="mechanicTitle"></h4><p id="mechanicSummary" style="margin-top:10px;"></p><div class="mechanic-grid" style="margin-top:18px;"><article class="mini-card"><h4>Why it matters</h4><p id="mechanicWhy"></p></article><article class="mini-card"><h4>Where it appears</h4><p id="mechanicWhere"></p></article><article class="mini-card"><h4>Watch for</h4><p id="mechanicWatch"></p></article></div><ul class="list" id="mechanicList"></ul></article></div></section><section class="section-card" id="playbook"><div class="section-head"><div><div class="section-num">06 - Interview Playbook</div><h3 class="section-title">What to ask, what to estimate, and what to trade off out loud</h3><p class="section-desc"> The strongest interview answers feel structured, not encyclopedic. They show that you can narrow the problem, pick a sane first design, and explain why the next refinement matters. </p></div><span class="label">Checklist</span></div><div class="question-grid"><article class="reference-card"><h4>Opening questions</h4><ul class="question-list"><li><div>What exact user actions matter in this version of the problem?</div></li><li><div>What are the latency, freshness, or correctness guarantees?</div></li><li><div>How large is the active dataset and how skewed is the traffic?</div></li><li><div>What is the disaster if a message, event, or write is duplicated or delayed?</div></li></ul></article><article class="reference-card"><h4>Back-of-the-envelope habits</h4><ul class="question-list"><li><div>Compute peak QPS before talking about autoscaling.</div></li><li><div>Estimate storage growth before selecting a database family.</div></li><li><div>Name the hot partition or hot key risk early.</div></li><li><div>Say which numbers are assumptions and which ones are constraints.</div></li></ul></article><article class="reference-card"><h4>Tradeoffs worth saying explicitly</h4><ul class="question-list"><li><div>Read amplification vs write amplification</div></li><li><div>Freshness vs cost</div></li><li><div>Availability vs coordination strictness</div></li><li><div>Operational simplicity vs service flexibility</div></li></ul></article></div><div class="check-grid" style="margin-top:18px;"><article class="code-card"><h4>Scalable design skeleton</h4><pre><code>1. Clarify scope and guarantees
+  </style></head><body><div class="shell"><header class="header"><div class="brand"><div class="brand-mark">SD</div><div><h1>System Design Atlas</h1><p>Scalable systems, interview patterns, and internal mechanics</p></div></div><div class="header-actions"><a class="btn" href="#pattern-studio">Pattern Studio</a><a class="btn" href="#family-explorer">Chapter Explorer</a><a class="btn" href="#playbook">Interview Playbook</a></div></header><section class="hero"><article class="hero-card"><span class="eyebrow">System Design</span><h2>From vague prompt to <span>scalable architecture</span> with reusable design moves.</h2><p class="hero-copy"> This atlas reorganizes the attached system design material into a studyable map of foundations, traffic control, storage partitioning, collaboration systems, geo systems, event platforms, and correctness-critical money flows. Instead of isolated chapter summaries, it shows the internal mechanics that keep repeating: load balancing, caches, queues, indexes, shards, fanout paths, consistency boundaries, and reconciliation loops. </p><div class="tag-row"><span>28 core topics</span><span>7 architecture families</span><span>Interactive canvases</span><span>Internal workings</span></div></article><aside class="hero-side"><div class="metric-grid"><article class="panel"><div class="metric-label">Foundations</div><div class="metric-value">3</div><p>Scope, estimation, and interview framing anchor every later design.</p></article><article class="panel"><div class="metric-label">Design Problems</div><div class="metric-value">25</div><p>From rate limiters and chat to stock exchanges and digital wallets.</p></article><article class="panel"><div class="metric-label">Pattern Families</div><div class="metric-value">7</div><p>Reusable buckets for traffic, content, geo, data platforms, and money systems.</p></article><article class="panel"><div class="metric-label">Recurring Mechanics</div><div class="metric-value">6</div><p>Caches, shards, queues, fanout, geo indexes, and transactional coordination.</p></article></div><article class="mini-card floating"><h4>What changes as systems scale?</h4><p> The request path rarely stays simple for long. Reads split from writes, hot paths move into caches, coordination moves into queues or logs, and correctness-heavy systems begin to care more about ordering than raw throughput. </p></article></aside></section><nav class="quick-nav"><a class="nav-chip" href="#workbench">Workbench</a><a class="nav-chip active" href="#architecture-engine">Architecture Engine</a><a class="nav-chip" href="#pattern-studio">Pattern Studio</a><a class="nav-chip" href="#family-explorer">Chapter Explorer</a><a class="nav-chip" href="#matrix">Matrix</a><a class="nav-chip" href="#internals">Internal Workings</a><a class="nav-chip" href="#playbook">Playbook</a></nav><section class="section-card" id="workbench"><div class="section-head"><div><div class="section-num">00 - Workbench</div><h3 class="section-title">Tune a real system design and watch the tradeoffs move</h3><p class="section-desc"> This workbench stays close to the hard part of system design: traffic shape, consistency pressure, caching, fanout, and recovery. Change the workload and the architecture shifts with it. </p></div><span class="label">Interactive controls</span></div><div class="workbench-grid"><article class="workbench-card"><div class="wb-head"><div><div class="meta-pill">Scenario</div><h4>Pick a system shape</h4></div><span class="label">Live</span></div><div class="tab-row" id="workbenchScenarioTabs"></div><div class="workbench-panel"><label class="wb-control"><span>Traffic profile</span><select id="wbTrafficProfile"></select></label><label class="wb-control"><span>Peak QPS</span><input id="wbQps" type="range" min="1" max="200" value="60"></label><label class="wb-control"><span>Read ratio</span><input id="wbReadRatio" type="range" min="10" max="95" value="80"></label><label class="wb-control"><span>Freshness budget</span><input id="wbFreshness" type="range" min="1" max="120" value="18"></label><label class="wb-control"><span>Fanout depth</span><input id="wbFanout" type="range" min="1" max="8" value="4"></label><label class="wb-control"><span>Cache hit rate</span><input id="wbCache" type="range" min="0" max="98" value="72"></label></div><div class="wb-toggle-row"><label><input id="wbReplica" type="checkbox" checked> Multi-region replicas</label><label><input id="wbQueue" type="checkbox" checked> Async queue / log</label><label><input id="wbIdempotency" type="checkbox" checked> Idempotent writes</label><label><input id="wbReconciliation" type="checkbox"> Reconciliation job</label></div></article><article class="workbench-card"><div class="wb-head"><div><div class="meta-pill">Request path</div><h4>How the system responds</h4></div><span class="label" id="wbRiskLabel">Moderate risk</span></div><canvas class="wb-canvas" id="wbCanvas" width="1120" height="420"></canvas><div class="wb-metrics" id="wbMetrics"></div></article><article class="workbench-card"><div class="wb-head"><div><div class="meta-pill">Explanation</div><h4>Why this design looks this way</h4></div></div><ul class="step-list" id="wbNotes"></ul></article></div></section><section class="section-card" id="architecture-engine"><div class="section-head"><div><div class="section-num">01 - Architecture Engine</div><h3 class="section-title">The system design loop that almost every chapter repeats</h3><p class="section-desc"> The surface area changes from problem to problem, but the structure stays familiar: frame the problem, estimate scale, shape the APIs, choose the data model, isolate the bottlenecks, and then decide where coordination belongs. </p></div><span class="label">Animated map</span></div><div class="grid-2"><article class="canvas-card"><canvas id="engineCanvas" width="1120" height="420"></canvas><p class="caption"> The animated path shows how a design discussion tends to move from problem framing into traffic, state, coordination, and operational tradeoffs. </p></article><article class="detail-card"><h4>The six questions to keep asking</h4><ul class="step-list"><li><div><strong>What is the true scope?</strong><br>Clarify functional and non-functional requirements before drawing architecture.</div></li><li><div><strong>What is the scale envelope?</strong><br>Estimate QPS, storage, growth, hotspots, and how skewed the read-write ratio will be.</div></li><li><div><strong>Where does state live?</strong><br>Pick the data model, partition key, indexing strategy, and write path.</div></li><li><div><strong>What gets cached or precomputed?</strong><br>Read-heavy systems usually win or lose on derivations and locality.</div></li><li><div><strong>Where does coordination belong?</strong><br>Locks, queues, logs, leader election, or optimistic conflict handling each change the failure model.</div></li><li><div><strong>What breaks first?</strong><br>Name the likely hotspots, stale data paths, ordering issues, and recovery loops.</div></li></ul></article></div><div class="roadmap-grid" style="margin-top:18px;"><article class="track-card"><h4>Read-heavy architectures</h4><p>Feeds, autocomplete, maps, video delivery, and short-link redirects bias toward caches, replicas, precomputation, and background rebuild paths.</p></article><article class="track-card"><h4>Realtime collaboration</h4><p>Chat, notifications, nearby friends, and live leaderboards bias toward long-lived connections, fanout discipline, and freshness budgets.</p></article><article class="track-card"><h4>Correctness-critical systems</h4><p>Reservations, wallets, payments, and exchanges care more about idempotency, ordering, and reconciliation than they do about maximum horizontal spread.</p></article></div></section><section class="section-card" id="pattern-studio"><div class="section-head"><div><div class="section-num">02 - Pattern Studio</div><h3 class="section-title">Reusable architecture patterns across the full chapter set</h3><p class="section-desc"> This section groups the full chapter list by system behavior rather than by table of contents. Pick a pattern to see what it optimizes, where it breaks, and which chapter families depend on it most heavily. </p></div><span class="label">Interactive</span></div><div class="tab-row" id="patternTabs"></div><div class="grid-2" style="margin-top:18px;"><article class="detail-card"><div class="detail-topline" id="patternTopline"></div><h4 id="patternTitle"></h4><p id="patternSummary" style="margin-top:10px;"></p><ul class="list" id="patternSteps"></ul><div class="pattern-metrics" id="patternMetrics"></div></article><article class="canvas-card"><canvas id="patternCanvas" width="1120" height="420"></canvas><p class="caption" id="patternCaption"></p></article></div></section><section class="section-card" id="family-explorer"><div class="section-head"><div><div class="section-num">03 - Chapter Explorer</div><h3 class="section-title">Browse the full chapter set by architecture family</h3><p class="section-desc"> The original material spans foundations, infrastructure control, collaboration, geo systems, event platforms, and financial correctness. Use the family tabs to see how the individual problems cluster. </p></div><span class="label">28 topics</span></div><div class="family-tabs" id="familyTabs"></div><div class="grid-2" style="margin-top:18px;"><div class="family-card-grid" id="chapterCards"></div><article class="detail-card"><div class="detail-topline" id="chapterTopline"></div><h4 id="chapterTitle"></h4><p id="chapterSummary" style="margin-top:10px;"></p><div class="detail-grid"><article class="mini-card"><h4>Internal mechanics</h4><p id="chapterInternals"></p></article><article class="mini-card"><h4>Primary failure mode</h4><p id="chapterFailure"></p></article><article class="mini-card"><h4>Scaling shape</h4><p id="chapterScale"></p></article><article class="mini-card"><h4>Interview signal</h4><p id="chapterSignal"></p></article></div></article></div></section><section class="section-card" id="matrix"><div class="section-head"><div><div class="section-num">04 - Design Matrix</div><h3 class="section-title">How the major problem families differ under pressure</h3><p class="section-desc"> This matrix is a compressed memory aid. It translates the chapter set into recurring architectural pressure: what dominates the read path, where coordination lives, what storage shape matters, and which failure mode deserves the deepest explanation. </p></div><span class="label">Comparison</span></div><div class="matrix-list" id="matrixList"></div></section><section class="section-card" id="internals"><div class="section-head"><div><div class="section-num">05 - Internal Workings</div><h3 class="section-title">Mechanics that keep reappearing inside scalable systems</h3><p class="section-desc"> Rate limiters, feed fanout, queue partitions, geospatial indexes, realtime state propagation, and transaction safety are not separate interview tricks. They are the reusable gears behind many later designs. </p></div><span class="label">Deep dive</span></div><div class="mechanic-tabs" id="mechanicTabs"></div><div class="grid-2" style="margin-top:18px;"><article class="canvas-card"><canvas id="mechanicCanvas" width="1120" height="420"></canvas><p class="caption" id="mechanicCaption"></p></article><article class="detail-card"><div class="detail-topline" id="mechanicTopline"></div><h4 id="mechanicTitle"></h4><p id="mechanicSummary" style="margin-top:10px;"></p><div class="mechanic-grid" style="margin-top:18px;"><article class="mini-card"><h4>Why it matters</h4><p id="mechanicWhy"></p></article><article class="mini-card"><h4>Where it appears</h4><p id="mechanicWhere"></p></article><article class="mini-card"><h4>Watch for</h4><p id="mechanicWatch"></p></article></div><ul class="list" id="mechanicList"></ul></article></div></section><section class="section-card" id="playbook"><div class="section-head"><div><div class="section-num">06 - Interview Playbook</div><h3 class="section-title">What to ask, what to estimate, and what to trade off out loud</h3><p class="section-desc"> The strongest interview answers feel structured, not encyclopedic. They show that you can narrow the problem, pick a sane first design, and explain why the next refinement matters. </p></div><span class="label">Checklist</span></div><div class="question-grid"><article class="reference-card"><h4>Opening questions</h4><ul class="question-list"><li><div>What exact user actions matter in this version of the problem?</div></li><li><div>What are the latency, freshness, or correctness guarantees?</div></li><li><div>How large is the active dataset and how skewed is the traffic?</div></li><li><div>What is the disaster if a message, event, or write is duplicated or delayed?</div></li></ul></article><article class="reference-card"><h4>Back-of-the-envelope habits</h4><ul class="question-list"><li><div>Compute peak QPS before talking about autoscaling.</div></li><li><div>Estimate storage growth before selecting a database family.</div></li><li><div>Name the hot partition or hot key risk early.</div></li><li><div>Say which numbers are assumptions and which ones are constraints.</div></li></ul></article><article class="reference-card"><h4>Tradeoffs worth saying explicitly</h4><ul class="question-list"><li><div>Read amplification vs write amplification</div></li><li><div>Freshness vs cost</div></li><li><div>Availability vs coordination strictness</div></li><li><div>Operational simplicity vs service flexibility</div></li></ul></article></div><div class="check-grid" style="margin-top:18px;"><article class="code-card"><h4>Scalable design skeleton</h4><pre><code>1. Clarify scope and guarantees
 2. Estimate traffic, storage, and hotspots
 3. Sketch the simplest end-to-end request path
 4. Choose data model and partition strategy
@@ -1016,6 +1124,7 @@
 
     function init() {
       [
+        "workbenchScenarioTabs", "wbTrafficProfile", "wbQps", "wbReadRatio", "wbFreshness", "wbFanout", "wbCache", "wbReplica", "wbQueue", "wbIdempotency", "wbReconciliation", "wbMetrics", "wbNotes", "wbRiskLabel",
         "patternTabs", "patternTopline", "patternTitle", "patternSummary", "patternSteps", "patternMetrics", "patternCaption",
         "familyTabs", "chapterCards", "chapterTopline", "chapterTitle", "chapterSummary", "chapterInternals", "chapterFailure", "chapterScale", "chapterSignal",
         "matrixList",
@@ -1024,6 +1133,7 @@
         elements[id] = document.getElementById(id);
       });
 
+      renderWorkbench();
       renderPatternTabs();
       renderPattern();
       renderFamilyTabs();
@@ -1049,6 +1159,184 @@
 
     function currentMechanic() {
       return mechanics.find((mechanic) => mechanic.id === state.mechanicId) || mechanics[0];
+    }
+
+    const workbenchScenarios = [
+      {
+        id: "feed",
+        title: "Read-heavy feed",
+        trafficProfile: "spiky",
+        qps: 120,
+        readRatio: 92,
+        freshness: 8,
+        fanout: 6,
+        cache: 84,
+        replica: true,
+        queue: true,
+        idempotency: true,
+        reconciliation: false,
+        notes: [
+          "Reads dominate, so the first win comes from cache locality and precomputed timelines.",
+          "Fanout grows quickly, which makes write amplification and backfill design matter early.",
+          "A queue or log helps absorb bursts, but stale reads become the main user-visible risk."
+        ]
+      },
+      {
+        id: "ledger",
+        title: "Payments / ledger",
+        trafficProfile: "steady",
+        qps: 36,
+        readRatio: 54,
+        freshness: 3,
+        fanout: 2,
+        cache: 24,
+        replica: true,
+        queue: false,
+        idempotency: true,
+        reconciliation: true,
+        notes: [
+          "Correctness beats spread, so consistency and replay safety take priority over raw fanout.",
+          "The hardest part is duplicate handling, ordering, and clean recovery after partial failure.",
+          "Reconciliation is not decoration here; it is the thing that keeps state trustworthy."
+        ]
+      },
+      {
+        id: "chat",
+        title: "Realtime chat",
+        trafficProfile: "bursty",
+        qps: 78,
+        readRatio: 68,
+        freshness: 5,
+        fanout: 5,
+        cache: 52,
+        replica: true,
+        queue: true,
+        idempotency: true,
+        reconciliation: false,
+        notes: [
+          "Freshness matters more than perfect order, so delivery and presence paths split apart.",
+          "Long-lived connections and fanout pressure make connection management a first-class concern.",
+          "Queueing smooths traffic spikes, while idempotency limits duplicate deliveries."
+        ]
+      },
+      {
+        id: "geo",
+        title: "Geo service",
+        trafficProfile: "steady",
+        qps: 54,
+        readRatio: 88,
+        freshness: 16,
+        fanout: 3,
+        cache: 68,
+        replica: true,
+        queue: true,
+        idempotency: false,
+        reconciliation: false,
+        notes: [
+          "The main challenge is making spatial indexes fast enough without turning every update into a rebuild.",
+          "Caching is useful, but stale proximity data can be worse than a slower fresh answer.",
+          "Regional replicas reduce latency, though they add drift and operational branching."
+        ]
+      }
+    ];
+
+    const workbenchState = {
+      scenarioId: "feed",
+      trafficProfile: "spiky",
+      qps: 60,
+      readRatio: 80,
+      freshness: 18,
+      fanout: 4,
+      cache: 72,
+      replica: true,
+      queue: true,
+      idempotency: true,
+      reconciliation: false,
+      pulse: 0
+    };
+
+    function currentWorkbenchScenario() {
+      return workbenchScenarios.find((item) => item.id === workbenchState.scenarioId) || workbenchScenarios[0];
+    }
+
+    function applyWorkbenchScenario(scenario) {
+      workbenchState.trafficProfile = scenario.trafficProfile;
+      workbenchState.qps = scenario.qps;
+      workbenchState.readRatio = scenario.readRatio;
+      workbenchState.freshness = scenario.freshness;
+      workbenchState.fanout = scenario.fanout;
+      workbenchState.cache = scenario.cache;
+      workbenchState.replica = scenario.replica;
+      workbenchState.queue = scenario.queue;
+      workbenchState.idempotency = scenario.idempotency;
+      workbenchState.reconciliation = scenario.reconciliation;
+    }
+
+    function renderWorkbench() {
+      const scenario = currentWorkbenchScenario();
+      elements.workbenchScenarioTabs.innerHTML = workbenchScenarios.map((item) => `
+        <button class="family-btn ${item.id === workbenchState.scenarioId ? "active" : ""}" type="button" data-wb-scenario="${escapeHtml(item.id)}">${escapeHtml(item.title)}</button>
+      `).join("");
+
+      elements.workbenchScenarioTabs.querySelectorAll("[data-wb-scenario]").forEach((button) => {
+        button.addEventListener("click", () => {
+          workbenchState.scenarioId = button.getAttribute("data-wb-scenario");
+          applyWorkbenchScenario(currentWorkbenchScenario());
+          renderWorkbench();
+        });
+      });
+
+      elements.wbTrafficProfile.innerHTML = ["steady", "spiky", "bursty", "global peak"].map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join("");
+      elements.wbTrafficProfile.value = workbenchState.trafficProfile;
+      elements.wbQps.value = workbenchState.qps;
+      elements.wbReadRatio.value = workbenchState.readRatio;
+      elements.wbFreshness.value = workbenchState.freshness;
+      elements.wbFanout.value = workbenchState.fanout;
+      elements.wbCache.value = workbenchState.cache;
+      elements.wbReplica.checked = workbenchState.replica;
+      elements.wbQueue.checked = workbenchState.queue;
+      elements.wbIdempotency.checked = workbenchState.idempotency;
+      elements.wbReconciliation.checked = workbenchState.reconciliation;
+
+      [
+        ["wbTrafficProfile", "change", (e) => { workbenchState.trafficProfile = e.target.value; }],
+        ["wbQps", "input", (e) => { workbenchState.qps = Number(e.target.value); }],
+        ["wbReadRatio", "input", (e) => { workbenchState.readRatio = Number(e.target.value); }],
+        ["wbFreshness", "input", (e) => { workbenchState.freshness = Number(e.target.value); }],
+        ["wbFanout", "input", (e) => { workbenchState.fanout = Number(e.target.value); }],
+        ["wbCache", "input", (e) => { workbenchState.cache = Number(e.target.value); }],
+        ["wbReplica", "change", (e) => { workbenchState.replica = e.target.checked; }],
+        ["wbQueue", "change", (e) => { workbenchState.queue = e.target.checked; }],
+        ["wbIdempotency", "change", (e) => { workbenchState.idempotency = e.target.checked; }],
+        ["wbReconciliation", "change", (e) => { workbenchState.reconciliation = e.target.checked; }]
+      ].forEach(([id, evt, handler]) => {
+        const el = elements[id];
+        if (el && !el.dataset.bound) {
+          el.addEventListener(evt, handler);
+          el.dataset.bound = "1";
+        }
+      });
+
+      const latency = Math.round(Math.max(8, workbenchState.freshness * 1.2 + workbenchState.qps * 0.22 + workbenchState.fanout * 4 - workbenchState.cache * 0.18 + (workbenchState.queue ? 4 : 10)));
+      const consistency = Math.round(Math.max(12, 100 - workbenchState.freshness - (workbenchState.idempotency ? 12 : 0) + (workbenchState.reconciliation ? -8 : 0)));
+      const ops = Math.round(Math.max(18, workbenchState.qps * 0.72 + workbenchState.fanout * 6 + (workbenchState.replica ? 10 : 0)));
+      const risk = Math.round((latency + consistency + ops) / 3);
+      elements.wbRiskLabel.textContent = risk < 34 ? "Low risk" : risk < 62 ? "Moderate risk" : "High risk";
+
+      elements.wbMetrics.innerHTML = [
+        { label: "Latency", value: latency + " ms", note: "Mostly driven by freshness, cache hit rate, and whether the hot path has to coordinate." },
+        { label: "Consistency pressure", value: consistency + "%", note: "Rises when state is precious, stale answers hurt, or recovery needs clean replay." },
+        { label: "Ops complexity", value: ops, note: "Grows with fanout, replicas, queues, and any repair loop that has to run after the fact." },
+        { label: "Recovery risk", value: risk, note: "This is the rough shape of what breaks first when traffic and failure overlap." }
+      ].map((item) => `
+        <article class="wb-metric">
+          <div class="metric-label">${escapeHtml(item.label)}</div>
+          <div class="metric-value">${escapeHtml(item.value)}</div>
+          <p>${escapeHtml(item.note)}</p>
+        </article>
+      `).join("");
+
+      elements.wbNotes.innerHTML = scenario.notes.map((note) => `<li><div>${escapeHtml(note)}</div></li>`).join("");
     }
 
     function renderPatternTabs() {
@@ -1169,10 +1457,60 @@
 
     function animate(time) {
       state.pulse = (time || 0) * 0.001;
+      workbenchState.pulse = state.pulse;
+      drawWorkbenchCanvas();
       drawEngineCanvas();
       drawPatternCanvas();
       drawMechanicCanvas();
       requestAnimationFrame(animate);
+    }
+
+    function drawWorkbenchCanvas() {
+      const canvas = document.getElementById("wbCanvas");
+      if (!canvas) return;
+      const { ctx, width, height } = prepareCanvas(canvas, 1120, 420);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(255,255,255,0.03)";
+      ctx.fillRect(0, 0, width, height);
+      const nodes = [
+        { label: "Client", x: 110, y: 210, color: "#2f7dff" },
+        { label: "Edge", x: 300, y: 150, color: "#34d399" },
+        { label: "Cache", x: 480, y: 210, color: "#ffb84d" },
+        { label: "API", x: 660, y: 150, color: "#8b5cf6" },
+        { label: workbenchState.queue ? "Queue" : "Store", x: 840, y: 210, color: "#ff7a59" },
+        { label: workbenchState.reconciliation ? "Repair" : "Serve", x: 1020, y: 150, color: "#0f766e" }
+      ];
+      ctx.lineWidth = Math.max(2, width * 0.003);
+      ctx.strokeStyle = workbenchState.replica ? "rgba(52,211,153,0.34)" : "rgba(126,160,194,0.24)";
+      ctx.beginPath();
+      ctx.moveTo(nodes[0].x, nodes[0].y);
+      nodes.slice(1).forEach((node) => ctx.lineTo(node.x, node.y));
+      ctx.stroke();
+      const pulse = (Math.sin(workbenchState.pulse * 1.8) + 1) / 2;
+      nodes.forEach((node, index) => {
+        const r = 22 + (index === Math.floor((workbenchState.pulse * 1.1) % nodes.length) ? pulse * 8 : 0);
+        ctx.fillStyle = node.color;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = `600 ${Math.max(11, width * 0.012)}px IBM Plex Mono, monospace`;
+        ctx.textAlign = "center";
+        drawCenteredWrappedText(ctx, node.label, node.x, node.y + 5, 120, Math.max(11, width * 0.013));
+      });
+      const freshness = Math.max(1, Math.min(120, workbenchState.freshness));
+      const budgetWidth = Math.max(180, Math.min(420, width * 0.28));
+      ctx.fillStyle = "rgba(15,23,42,0.75)";
+      ctx.fillRect(width - budgetWidth - 28, 26, budgetWidth, 64);
+      ctx.strokeStyle = "rgba(126,160,194,0.3)";
+      ctx.strokeRect(width - budgetWidth - 28, 26, budgetWidth, 64);
+      ctx.fillStyle = "#edf5ff";
+      ctx.font = `700 ${Math.max(13, width * 0.014)}px Space Grotesk, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText(`Freshness budget: ${freshness}s`, width - budgetWidth - 14, 52);
+      ctx.fillStyle = "#9fb3c8";
+      ctx.font = `500 ${Math.max(10, width * 0.011)}px Inter, sans-serif`;
+      ctx.fillText(`Cache hit ${workbenchState.cache}%  |  Fanout ${workbenchState.fanout}  |  QPS ${workbenchState.qps}`, width - budgetWidth - 14, 76);
     }
 
     function drawEngineCanvas() {
