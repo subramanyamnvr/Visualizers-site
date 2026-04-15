@@ -2495,76 +2495,98 @@
 
     function renderWorkbench() {
       const useCaseMap = {
-        finops: { label: "Batch-ready", baseLag: 720, risk: 24, replay: 92, notes: ["Best for day-based marts, finance reporting, and controlled backfills.", "Fewer moving parts keep the system easy to explain and govern."] },
-        realtime: { label: "Realtime", baseLag: 15, risk: 78, replay: 54, notes: ["Freshness matters more than simplicity, so streaming and checkpointing become central.", "Late data, state growth, and alerting discipline matter more than the storage brand." ] },
-        cdc: { label: "CDC-heavy", baseLag: 45, risk: 48, replay: 84, notes: ["Operational mirrors need ordered changes, merge logic, and strong idempotency.", "Bootstraps plus incremental merges are usually better than brute-force reloads." ] },
-        ml: { label: "Feature-ready", baseLag: 180, risk: 58, replay: 76, notes: ["Feature pipelines want stable contracts, lineage, and repeatable history windows.", "Quality checks and catalog discipline matter because downstream models amplify bad inputs."] }
+        finops: { label: "Batch-ready", replay: 92, risk: 24, notes: ["Best for marts, finance reporting, and controlled backfills.", "Predictable reloads and a smaller surface area keep operations calm."] },
+        realtime: { label: "Realtime", replay: 54, risk: 78, notes: ["Freshness drives the design, so checkpoints and backpressure matter.", "Latency and late data handling become the main design pressure."] },
+        cdc: { label: "CDC-heavy", replay: 84, risk: 48, notes: ["Ordered changes and merge logic dominate correctness.", "Bootstrap plus incrementals is usually healthier than brute-force reloads."] },
+        ml: { label: "Feature-ready", replay: 76, risk: 58, notes: ["Stable contracts and repeatable history windows matter most.", "Quality checks protect downstream models from silent drift."] }
       };
       const engineMap = {
-        spark: { label: "Spark", speed: 0.8, cost: 1.1, style: "High-throughput batch and iterative transforms." },
-        flink: { label: "Flink", speed: 1.8, cost: 1.4, style: "Stateful streaming and event-time control." },
-        warehouse: { label: "Warehouse SQL", speed: 1.1, cost: 1.25, style: "Curated marts, concurrency, and analytic serving." },
-        trino: { label: "Trino", speed: 1.0, cost: 0.9, style: "Federated SQL across lake and warehouse sources." }
+        spark: { label: "Spark", note: "High-throughput batch and iterative transforms." },
+        flink: { label: "Flink", note: "Stateful streaming and event-time control." },
+        warehouse: { label: "Warehouse SQL", note: "Curated marts, concurrency, and analytic serving." },
+        trino: { label: "Trino", note: "Federated SQL across lake and warehouse sources." }
       };
       const storageMap = {
-        lake: { label: "Lakehouse", score: 1.0, style: "Open tables in object storage with catalog control." },
-        warehouse: { label: "Warehouse", score: 1.12, style: "Managed serving tables with polished concurrency." },
-        hybrid: { label: "Hybrid", score: 1.18, style: "Lake for raw history, warehouse for serving." }
+        lake: { label: "Lakehouse" },
+        warehouse: { label: "Warehouse" },
+        hybrid: { label: "Hybrid" }
       };
       const use = useCaseMap[state.wbUseCase];
       const engine = engineMap[state.wbEngine];
       const storage = storageMap[state.wbStorage];
       const freshnessHours = Math.max(0.2, state.wbFreshness / 60);
-      const latency = Math.max(0.25, freshnessHours / (state.wbStreaming ? 6 : 1.15));
-      const cost = ((state.wbVolume / 1000) * engine.cost * storage.score) + (state.wbPartitions / 64) * 0.55 + (state.wbQuality ? 0.25 : 0.8);
+      const latency = Math.max(0.2, freshnessHours / (state.wbStreaming ? 6 : 1.2));
+      const cost = ((state.wbVolume / 1000) * (state.wbStreaming ? 1.3 : 1.0)) + (state.wbPartitions / 64) * 0.55 + (state.wbQuality ? 0.2 : 0.7);
       const reliability = clamp(use.replay + (state.wbCDC ? 4 : -8) + (state.wbCatalog ? 5 : -12) + (state.wbQuality ? 4 : -10) - Math.max(0, state.wbPartitions - 96) * 0.15, 0, 100);
       const risk = clamp(use.risk + (state.wbStreaming ? 12 : -6) + (state.wbCDC ? -4 : 5) + (state.wbCatalog ? -6 : 8) + (state.wbQuality ? -8 : 10) + Math.max(0, state.wbVolume - 2000) / 220, 0, 100);
+
       document.getElementById("wbMode").textContent = use.label;
-      document.getElementById("wbFreshnessVal").textContent = state.wbFreshness < 60 ? `${state.wbFreshness}m` : `${freshnessHours.toFixed(freshnessHours < 10 ? 1 : 0)}h`;
+      document.getElementById("wbFreshnessVal").textContent = state.wbFreshness < 60 ? `${state.wbFreshness}m` : `${freshnessHours.toFixed(1)}h`;
       document.getElementById("wbVolumeVal").textContent = `${(state.wbVolume / 1000).toFixed(1)} TB`;
       document.getElementById("wbPartitionsVal").textContent = String(state.wbPartitions);
-      document.getElementById("wbLatency").textContent = state.wbStreaming ? `${state.wbFreshness}m` : `${freshnessHours.toFixed(1)}h`;
+      document.getElementById("wbLatency").textContent = state.wbStreaming ? `${state.wbFreshness}m` : `${latency.toFixed(1)}h`;
       document.getElementById("wbCost").textContent = cost.toFixed(1);
       document.getElementById("wbReliability").textContent = `${Math.round(reliability)}%`;
       document.getElementById("wbRisk").textContent = `${Math.round(risk)}%`;
       document.getElementById("wbNotes").innerHTML = [
-        { title: "Engine fit", body: `${engine.label} is a good fit when you want ${engine.style.toLowerCase()} Storage mode: ${storage.label}.` },
-        { title: "Why it works", body: `${use.notes[0]} ${use.notes[1]}` },
-        { title: "Control pressure", body: `${state.wbCDC ? "CDC is on, so merge logic and idempotency are part of correctness." : "Without CDC, expect heavier reloads and larger recovery windows."} ${state.wbCatalog ? "Catalog discipline makes ownership and lineage legible." : "Without cataloging, discoverability and governance get brittle fast."}` },
-        { title: "Tuning advice", body: `${state.wbQuality ? "Quality checks are protecting the contract." : "Add quality checks before the system drifts into silent breakage."} ${state.wbStreaming ? "Streaming pushes you toward watermarks, checkpoints, and late-arrival policies." : "Batch keeps the system simpler and easier to replay."}` }
+        { title: "Workload fit", body: `${engine.label} pairs well with ${storage.label} storage when you want ${engine.note.toLowerCase()}` },
+        { title: "Why this shape works", body: `${use.notes[0]} ${use.notes[1]}` },
+        { title: "Operational pressure", body: `${state.wbCDC ? "CDC keeps change tracking explicit." : "Without CDC, recovery windows grow quickly."} ${state.wbCatalog ? "Cataloging keeps lineage and ownership legible." : "Without a catalog, discoverability gets brittle fast."}` },
+        { title: "Tuning guidance", body: `${state.wbQuality ? "Quality checks are protecting the contract." : "Add quality checks before the pipeline drifts into silent breakage."} ${state.wbStreaming ? "Streaming pushes you toward watermarks and checkpoints." : "Batch keeps replay and recovery simple."}` }
       ].map((item) => `<div class="wb-note"><strong>${item.title}</strong><div>${item.body}</div></div>`).join("");
+
       const canvas = document.getElementById("wbPipelineCanvas");
+      if (!canvas) return;
       const { ctx, width, height } = resizeCanvas(canvas, 360);
       ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = rgba(css("--a3"), 0.06);
+      roundRect(ctx, 14, 14, width - 28, height - 28, 18);
+      ctx.fill();
+      ctx.strokeStyle = rgba(css("--border"), 0.85);
+      ctx.stroke();
+
       const nodes = [
-        { x: 30, y: 110, w: 116, h: 78, label: "Sources", sub: `${state.wbStreaming ? "Events" : "Batch"} / ${state.wbCDC ? "CDC" : "extracts"}` },
-        { x: 180, y: 110, w: 116, h: 78, label: "Landing", sub: `${storage.label}\n${state.wbCatalog ? "cataloged" : "ad hoc"}` },
-        { x: 330, y: 110, w: 116, h: 78, label: "Transform", sub: `${engine.label}\n${state.wbQuality ? "checked" : "unchecked"}` },
-        { x: 480, y: 110, w: 116, h: 78, label: "Serving", sub: `${use.label}\n${state.wbStreaming ? "low lag" : "scheduled"}` }
+        { label: "Sources", sub: state.wbStreaming ? "events" : "batch", x: 34, y: 104, color: css("--a1") },
+        { label: "Landing", sub: storage.label, x: 184, y: 104, color: css("--a2") },
+        { label: "Transform", sub: engine.label, x: 334, y: 104, color: css("--a3") },
+        { label: "Serving", sub: use.label, x: 484, y: 104, color: css("--a4") }
       ];
-      ctx.strokeStyle = css("--a1"); ctx.lineWidth = 2;
+
       nodes.forEach((node, i) => {
-        if (i) { ctx.beginPath(); ctx.moveTo(nodes[i-1].x + nodes[i-1].w, node.y + node.h / 2); ctx.lineTo(node.x, node.y + node.h / 2); ctx.stroke(); }
-        roundRect(ctx, node.x, node.y, node.w, node.h, 14);
-        ctx.fillStyle = i % 2 ? rgba(css("--a4"), 0.15) : rgba(css("--a3"), 0.16);
+        if (i) {
+          ctx.beginPath();
+          ctx.strokeStyle = rgba(css("--border"), 0.95);
+          ctx.lineWidth = 2;
+          ctx.moveTo(nodes[i - 1].x + 116, node.y + 39);
+          ctx.lineTo(node.x, node.y + 39);
+          ctx.stroke();
+        }
+        roundRect(ctx, node.x, node.y, 116, 78, 16);
+        ctx.fillStyle = node.color;
         ctx.fill();
-        ctx.strokeStyle = rgba(css("--border"), 0.9);
-        ctx.stroke();
-        ctx.fillStyle = css("--text"); ctx.font = "700 15px Space Grotesk"; ctx.fillText(node.label, node.x + 14, node.y + 28);
-        ctx.fillStyle = css("--muted"); ctx.font = "12px var(--mono)"; node.sub.split("\n").forEach((line, idx) => ctx.fillText(line, node.x + 14, node.y + 49 + idx * 14));
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center";
+        ctx.font = "700 15px Space Grotesk";
+        ctx.fillText(node.label, node.x + 58, node.y + 30);
+        ctx.font = "12px IBM Plex Mono";
+        ctx.fillText(node.sub, node.x + 58, node.y + 51);
       });
-      const barY = 242;
-      const tracks = [
-        ["Freshness", 100 - Math.min(100, state.wbFreshness / 14)],
+
+      const bars = [
+        ["Freshness", Math.max(8, 100 - Math.min(100, state.wbFreshness / 12))],
         ["Reliability", reliability],
         ["Risk", risk]
       ];
-      tracks.forEach((track, i) => {
-        const y = barY + i * 32;
-        ctx.fillStyle = css("--muted"); ctx.font = "600 12px var(--mono)"; ctx.fillText(track[0], 28, y);
-        ctx.fillStyle = rgba(css("--border"), 0.8); ctx.fillRect(120, y - 10, 330, 12);
-        ctx.fillStyle = i === 2 ? css("--a5") : i ? css("--a3") : css("--a2");
-        ctx.fillRect(120, y - 10, 330 * (track[1] / 100), 12);
+      ctx.textAlign = "left";
+      bars.forEach((bar, index) => {
+        const y = 250 + index * 26;
+        ctx.fillStyle = css("--muted");
+        ctx.font = "600 12px IBM Plex Mono";
+        ctx.fillText(bar[0], 34, y);
+        ctx.fillStyle = rgba(css("--border"), 0.8);
+        ctx.fillRect(122, y - 10, width - 170, 10);
+        ctx.fillStyle = index === 2 ? css("--a5") : index === 1 ? css("--a3") : css("--a2");
+        ctx.fillRect(122, y - 10, (width - 170) * (bar[1] / 100), 10);
       });
     }
 
@@ -3488,8 +3510,9 @@
         state.wbStreaming = document.getElementById("wbStreaming").checked;
         state.wbCatalog = document.getElementById("wbCatalog").checked;
         state.wbQuality = document.getElementById("wbQuality").checked;
-        renderWorkbench();
-      });
+      renderWorkbench();
+      window.addEventListener("resize", renderWorkbench);
+    });
     });
     window.addEventListener("scroll", updateNavActive, { passive: true });
     window.addEventListener("resize", () => {
