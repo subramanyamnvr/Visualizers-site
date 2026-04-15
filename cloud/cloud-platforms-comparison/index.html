@@ -457,7 +457,7 @@
         max-width: none;
       }
     }
-  </style></head><body><div class="shell"><header class="topbar panel"><div class="brand"><div class="brand-mark">CP</div><div><div class="brand-title">Cloud Platforms Comparison Atlas</div><div class="brand-subtitle">AWS, Microsoft Azure, and Google Cloud in one design map</div></div></div><div class="toolbar"><a class="jump-link is-primary" href="#lensStudio">Open comparison studio</a><a class="jump-link" href="#references">Official references</a></div></header><section class="hero"><article class="hero-copy panel"><span class="eyebrow">Cloud</span><h1>Compare the three major cloud platforms with a design lens.</h1><p class="section-lead"> This atlas is built for architecture decisions rather than marketing claims. It crosswalks AWS, Microsoft Azure, and Google Cloud across compute, storage, containers, serverless, data, messaging, AI, networking, security, observability, and hybrid operating models. </p><div class="hero-actions"><a class="jump-link is-primary" href="#lensStudio">Choose a service lens</a><a class="jump-link" href="#matrixPanel">See the crosswalk matrix</a></div><div class="summary-grid" id="summaryGrid"></div></article><aside class="hero-visual panel"><h2>How to read this atlas</h2><p class="section-lead"> The comparison notes are a synthesis of official product and architecture pages. Service names and links come from the vendors; the workload guidance is an engineering inference layered on top. </p><div class="signal-grid" id="signalGrid"></div></aside></section><section class="provider-grid panel"><h2>Provider Profiles</h2><p class="section-lead"> These profile cards are directional, not benchmark scores. They capture the platform shape architects commonly feel when moving from core services into day-two operations. </p><div class="provider-cards" id="providerCards"></div></section><section class="lens-studio panel" id="lensStudio"><h2>Comparison Studio</h2><p class="section-lead"> Pick a decision lens to compare the nearest AWS, Azure, and Google Cloud service families side by side. The fit notes are inference; the linked service pages are official. </p><div class="lens-layout"><div class="lens-controls" id="lensControls"></div><div><article class="matrix-card" id="lensIntro"></article><div class="lens-grid" id="lensGrid"></div></div></div></section><section class="matrix-panel panel" id="matrixPanel"><h2>Crosswalk Matrix</h2><p class="section-lead"> This is the quickest provider-to-provider translation sheet for common architecture decisions. </p><div class="matrix-grid" id="matrixGrid"></div><p class="matrix-caption"> Inference: the matrix points to the closest mainstream service equivalents, not identical feature parity. </p></section><section class="scenario-panel panel"><h2>Workload Archetypes</h2><p class="section-lead"> These recommendations are design synthesis, not vendor rankings. They highlight where each cloud often feels easiest to justify or operate for a given workload shape. </p><div class="scenario-grid" id="scenarioGrid"></div></section><section class="reference-panel panel" id="references"><h2>Official References</h2><p class="section-lead"> The active lens below fans out into official product and documentation links for AWS, Microsoft Azure, and Google Cloud. </p><div class="reference-grid" id="referenceGrid"></div><p class="footer-note"> Because cloud services evolve, use the links below as the source of truth for the latest features, limits, and positioning. </p></section></div><script>
+  </style></head><body><div class="shell"><header class="topbar panel"><div class="brand"><div class="brand-mark">CP</div><div><div class="brand-title">Cloud Platforms Comparison Atlas</div><div class="brand-subtitle">AWS, Microsoft Azure, and Google Cloud in one design map</div></div></div><div class="toolbar"><a class="jump-link is-primary" href="#lensStudio">Open comparison studio</a><a class="jump-link" href="#references">Official references</a></div></header><section class="hero"><article class="hero-copy panel"><span class="eyebrow">Cloud</span><h1>Compare the three major cloud platforms with a design lens.</h1><p class="section-lead"> This atlas is built for architecture decisions rather than marketing claims. It crosswalks AWS, Microsoft Azure, and Google Cloud across compute, storage, containers, serverless, data, messaging, AI, networking, security, observability, and hybrid operating models. </p><div class="hero-actions"><a class="jump-link is-primary" href="#lensStudio">Choose a service lens</a><a class="jump-link" href="#matrixPanel">See the crosswalk matrix</a></div><div class="summary-grid" id="summaryGrid"></div></article><aside class="hero-visual panel"><h2>How to read this atlas</h2><p class="section-lead"> The comparison notes are a synthesis of official product and architecture pages. Service names and links come from the vendors; the workload guidance is an engineering inference layered on top. </p><div class="signal-grid" id="signalGrid"></div></aside></section><section class="panel" id="workbench"><div class="section-head" style="padding: 22px 22px 0;"><div><div class="eyebrow">Workbench</div><h2>Shape one cloud architecture and watch the tradeoffs move</h2><p class="section-lead"> This workbench keeps the focus tight: workload style, statefulness, resilience, and platform bias. Change the inputs and the architecture map updates with the consequences. </p></div><div class="toolbar"><a class="jump-link is-primary" href="#lensStudio">Open comparison studio</a><a class="jump-link" href="#references">Official references</a></div></div><div class="workbench-grid" style="padding: 22px;"><article class="scenario-card"><div class="matrix-kicker">Workload</div><h3 id="wbTitle">Serverless API platform</h3><p class="scenario-copy" id="wbDescription">A product team wants low-ops delivery with enough structure to survive growth.</p><div class="lens-controls" style="margin-top:14px;"><label class="lens-card" style="padding:12px;"><span class="matrix-kicker">Primary workload</span><select id="wbWorkload" style="width:100%;margin-top:8px;"><option value="api">API and web app</option><option value="batch">Batch analytics</option><option value="event">Event-driven platform</option><option value="global">Global consumer app</option></select></label><label class="lens-card" style="padding:12px;"><span class="matrix-kicker">Statefulness</span><input id="wbState" type="range" min="0" max="100" value="42" style="width:100%;margin-top:10px;"></label><label class="lens-card" style="padding:12px;"><span class="matrix-kicker">Traffic burst</span><input id="wbBurst" type="range" min="0" max="100" value="55" style="width:100%;margin-top:10px;"></label><div class="scenario-picks"><label><input id="wbMultiRegion" type="checkbox" checked> Multi-region</label><label><input id="wbManaged" type="checkbox" checked> Prefer managed services</label><label><input id="wbAutoscale" type="checkbox" checked> Autoscale by default</label></div></div></article><article class="lens-card"><div class="matrix-kicker">Architecture map</div><canvas id="wbCloudCanvas" width="920" height="360" style="width:100%;height:auto;border-radius:18px;border:1px solid var(--border);background:var(--surface-strong);margin-top:10px;"></canvas></article><article class="matrix-card"><div class="matrix-kicker">Outcome</div><div class="summary-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 10px;"><article class="summary-card"><div class="summary-label">Latency</div><div class="summary-value" id="wbLatency">0</div></article><article class="summary-card"><div class="summary-label">Portability</div><div class="summary-value" id="wbPortability">0</div></article><article class="summary-card"><div class="summary-label">Ops load</div><div class="summary-value" id="wbOps">0</div></article><article class="summary-card"><div class="summary-label">Lock-in</div><div class="summary-value" id="wbLockin">0</div></article></div><div class="reference-list" id="wbNotes" style="margin-top:14px;"></div></article></div></section><section class="provider-grid panel"><h2>Provider Profiles</h2><p class="section-lead"> These profile cards are directional, not benchmark scores. They capture the platform shape architects commonly feel when moving from core services into day-two operations. </p><div class="provider-cards" id="providerCards"></div></section><section class="lens-studio panel" id="lensStudio"><h2>Comparison Studio</h2><p class="section-lead"> Pick a decision lens to compare the nearest AWS, Azure, and Google Cloud service families side by side. The fit notes are inference; the linked service pages are official. </p><div class="lens-layout"><div class="lens-controls" id="lensControls"></div><div><article class="matrix-card" id="lensIntro"></article><div class="lens-grid" id="lensGrid"></div></div></div></section><section class="matrix-panel panel" id="matrixPanel"><h2>Crosswalk Matrix</h2><p class="section-lead"> This is the quickest provider-to-provider translation sheet for common architecture decisions. </p><div class="matrix-grid" id="matrixGrid"></div><p class="matrix-caption"> Inference: the matrix points to the closest mainstream service equivalents, not identical feature parity. </p></section><section class="scenario-panel panel"><h2>Workload Archetypes</h2><p class="section-lead"> These recommendations are design synthesis, not vendor rankings. They highlight where each cloud often feels easiest to justify or operate for a given workload shape. </p><div class="scenario-grid" id="scenarioGrid"></div></section><section class="reference-panel panel" id="references"><h2>Official References</h2><p class="section-lead"> The active lens below fans out into official product and documentation links for AWS, Microsoft Azure, and Google Cloud. </p><div class="reference-grid" id="referenceGrid"></div><p class="footer-note"> Because cloud services evolve, use the links below as the source of truth for the latest features, limits, and positioning. </p></section></div><script>
     const providers = [
       {
         id: "aws",
@@ -1036,7 +1036,7 @@
       }
     ];
 
-    const state = { lensId: lenses[0].id };
+    const state = { lensId: lenses[0].id, wbWorkload: "api", wbState: 42, wbBurst: 55, wbMultiRegion: true, wbManaged: true, wbAutoscale: true };
     const elements = {};
 
     document.addEventListener("DOMContentLoaded", init);
@@ -1046,6 +1046,20 @@
         "summaryGrid",
         "signalGrid",
         "providerCards",
+        "wbTitle",
+        "wbDescription",
+        "wbWorkload",
+        "wbState",
+        "wbBurst",
+        "wbMultiRegion",
+        "wbManaged",
+        "wbAutoscale",
+        "wbCloudCanvas",
+        "wbLatency",
+        "wbPortability",
+        "wbOps",
+        "wbLockin",
+        "wbNotes",
         "lensControls",
         "lensIntro",
         "lensGrid",
@@ -1057,16 +1071,82 @@
       });
 
       renderSummary();
+      renderWorkbench();
       renderSignals();
       renderProviders();
       renderLensControls();
       renderLens();
       renderMatrix();
       renderScenarios();
+
+      [
+        ["wbWorkload", "change", (event) => { state.wbWorkload = event.target.value; renderWorkbench(); }],
+        ["wbState", "input", (event) => { state.wbState = Number(event.target.value); renderWorkbench(); }],
+        ["wbBurst", "input", (event) => { state.wbBurst = Number(event.target.value); renderWorkbench(); }],
+        ["wbMultiRegion", "change", (event) => { state.wbMultiRegion = event.target.checked; renderWorkbench(); }],
+        ["wbManaged", "change", (event) => { state.wbManaged = event.target.checked; renderWorkbench(); }],
+        ["wbAutoscale", "change", (event) => { state.wbAutoscale = event.target.checked; renderWorkbench(); }]
+      ].forEach(([id, eventName, handler]) => {
+        const el = document.getElementById(id);
+        if (el && !el.dataset.bound) {
+          el.addEventListener(eventName, handler);
+          el.dataset.bound = "1";
+        }
+      });
     }
 
     function activeLens() {
       return lenses.find((lens) => lens.id === state.lensId) || lenses[0];
+    }
+
+    function renderWorkbench() {
+      const presets = {
+        api: { title: "Serverless API platform", copy: "Low-ops service delivery with moderate state and a preference for managed edge and app layers.", latency: 42, portability: 62, ops: 28, lockin: 48, notes: ["Managed serverless services keep the day-two load lighter.", "State stays modest, but identity and networking still shape the design.", "The first bottleneck is usually orchestration, not raw compute."] },
+        batch: { title: "Batch analytics platform", copy: "A warehouse or lakehouse workflow tuned for freshness windows, repeatable transforms, and strong lineage.", latency: 88, portability: 74, ops: 34, lockin: 33, notes: ["Batch favors durability and repeatability over immediate response.", "Open storage patterns help portability, but pipelines still need governance.", "The hardest boundary is usually between raw landing and curated serving."] },
+        event: { title: "Event-driven platform", copy: "Asynchronous services, queue boundaries, and replay-safe workflows define the shape.", latency: 36, portability: 56, ops: 61, lockin: 44, notes: ["Queues lower coupling, but they raise replay and observability needs.", "Multi-region delivery is helpful when availability matters more than strict ordering.", "The hidden cost is usually operational coordination rather than the queue itself."] },
+        global: { title: "Global consumer app", copy: "A latency-sensitive product with edge delivery, regional routing, and careful state placement.", latency: 24, portability: 41, ops: 67, lockin: 58, notes: ["Global systems usually pay for replication and control-plane complexity.", "Managed services reduce toil, but they can increase dependency on one ecosystem.", "The first compromise is often between consistency and user-perceived speed."] }
+      };
+
+      const preset = presets[state.wbWorkload];
+      elements.wbTitle.textContent = preset.title;
+      elements.wbDescription.textContent = preset.copy;
+      elements.wbLatency.textContent = `${Math.max(8, preset.latency - Math.round(state.wbState / 9) + (state.wbMultiRegion ? 8 : 0))} ms`;
+      elements.wbPortability.textContent = Math.max(18, preset.portability + (state.wbManaged ? -10 : 6) + (state.wbMultiRegion ? 8 : -4));
+      elements.wbOps.textContent = Math.max(12, preset.ops + (state.wbManaged ? -8 : 12) + (state.wbAutoscale ? -4 : 8));
+      elements.wbLockin.textContent = Math.max(10, preset.lockin + (state.wbManaged ? 10 : -6) + (state.wbMultiRegion ? 4 : 0));
+      elements.wbNotes.innerHTML = preset.notes.map((note) => `<div class="reference-card"><div class="reference-copy">${escapeHtml(note)}</div></div>`).join("");
+
+      const canvas = elements.wbCloudCanvas;
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width = canvas.clientWidth * (window.devicePixelRatio || 1);
+      const height = canvas.height = 360 * (window.devicePixelRatio || 1);
+      ctx.setTransform(window.devicePixelRatio || 1, 0, 0, window.devicePixelRatio || 1, 0, 0);
+      ctx.clearRect(0, 0, canvas.clientWidth, 360);
+      const nodes = [
+        ["Client", 80, 168, "var(--aws)"],
+        ["Edge", 250, 126, "var(--azure)"],
+        ["App", 430, 168, "var(--gcp)"],
+        ["Data", 620, 126, "var(--accent)"],
+        [state.wbMultiRegion ? "Replicas" : "Primary DB", 790, 168, state.wbMultiRegion ? "var(--gcp)" : "var(--aws)"]
+      ];
+      ctx.strokeStyle = "rgba(15,23,42,0.16)";
+      ctx.lineWidth = 2;
+      nodes.forEach((node, i) => {
+        const [label, x, y, color] = node;
+        if (i) {
+          ctx.beginPath();
+          ctx.moveTo(nodes[i-1][1] + 58, nodes[i-1][2]);
+          ctx.lineTo(x - 58, y);
+          ctx.stroke();
+        }
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(x - 58, y - 34, 116, 68, 16);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "700 16px Space Grotesk";
+        ctx.fillText(label, x - 32, y + 4);
+      });
     }
 
     function renderSummary() {
