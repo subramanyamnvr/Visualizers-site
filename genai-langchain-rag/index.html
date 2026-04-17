@@ -1,0 +1,476 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>LangChain RAG Workbench</title><meta name="description" content="Standalone LangChain RAG visualizer focused on document parsing, chunking, retrieval, reranking, grounding, and citations."><script src="../theme-sync.js"></script><link rel="stylesheet" href="../genai-llm-systems/styles.css"><style>
+    :root {
+      --accent: #0f766e;
+      --accent-strong: #0d9488;
+      --highlight: #38bdf8;
+    }
+
+    body.topic-page {
+      margin: 0;
+      background:
+        radial-gradient(circle at top right, rgba(15, 118, 110, 0.14), transparent 28%),
+        linear-gradient(180deg, #06111d 0%, #091625 100%);
+      color: var(--text);
+    }
+
+    .topic-shell {
+      width: min(1360px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 1.1rem 0 1.75rem;
+    }
+
+    .topic-shell .panel {
+      scroll-margin-top: 5.25rem;
+    }
+
+    .topic-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .topic-hero .hero__copy,
+    .topic-hero .hero__stats {
+      background: var(--surface-base);
+    }
+
+    .topic-kicker {
+      margin: 0 0 0.5rem;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .topic-nav {
+      position: sticky;
+      top: 0.85rem;
+      z-index: 6;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin: 0 0 1rem;
+      padding: 0.75rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(7, 17, 29, 0.98), rgba(7, 17, 29, 0.86));
+      backdrop-filter: blur(10px);
+    }
+
+    .topic-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.55rem;
+      padding: 0.68rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--muted-strong);
+      text-decoration: none;
+    }
+
+    .topic-nav a:hover,
+    .topic-nav a:focus-visible {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .topic-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .topic-metric {
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+    }
+
+    .topic-metric strong {
+      display: block;
+      font-size: 1.14rem;
+      color: var(--text);
+    }
+
+    .topic-metric span {
+      display: block;
+      margin-top: 0.25rem;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.45fr);
+      gap: 1rem;
+    }
+
+    .viz-card {
+      display: grid;
+      gap: 1rem;
+      min-width: 0;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-strong);
+    }
+
+    .viz-card__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .viz-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2rem;
+      padding: 0.35rem 0.65rem;
+      border: 1px solid rgba(15, 118, 110, 0.45);
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.12);
+      color: var(--muted-strong);
+      font-size: 0.84rem;
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .control {
+      display: grid;
+      gap: 0.38rem;
+    }
+
+    .control label {
+      color: var(--muted-strong);
+      font-size: 0.92rem;
+    }
+
+    .control input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .control input[type="checkbox"] {
+      accent-color: var(--accent);
+    }
+
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .toggle-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--muted-strong);
+      font-size: 0.9rem;
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 320px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--code-bg);
+    }
+
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .note-card {
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .note-card strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--text);
+    }
+
+    .code-note {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .failure-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .feature-card {
+      padding: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .feature-card h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1rem;
+    }
+
+    .feature-card p {
+      margin: 0 0 0.65rem;
+      color: var(--muted);
+    }
+
+    .failure-card {
+      padding: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .failure-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 0.98rem;
+    }
+
+    .failure-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1120px) {
+      .topic-hero,
+      .pipeline-grid,
+      .feature-grid,
+      .note-grid,
+      .failure-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style></head><body class="topic-page"><header class="topic-shell topic-hero"><div class="hero__copy"><p class="topic-kicker">GenAI · Retrieval First</p><h1>LangChain RAG Workbench</h1><p class="hero__lede"> A standalone visualizer for retrieval-grounded apps. It follows the notebook flow in the local GenAI notebook flow: load documents, split them by meaning, embed the chunks, retrieve evidence, rerank what matters, and answer from that evidence instead of relying on model memory alone. </p><p class="hero__note"> Built from the LangChain overview plus the local RAG and tool notebooks in `GenAICode/RAG-Mastery-main`. </p></div><div class="hero__stats"><div class="topic-metrics"><article class="topic-metric"><strong>Loaders</strong><span>Bring in files, pages, and web sources with metadata attached</span></article><article class="topic-metric"><strong>Retrievers</strong><span>Dense, hybrid, and filtered search decide the evidence set</span></article><article class="topic-metric"><strong>Chains</strong><span>Combine retrieval, prompt shaping, and final answer generation</span></article><article class="topic-metric"><strong>Observability</strong><span>Tracing and evaluation make failures easier to see</span></article></div></div></header><nav class="topic-shell topic-nav" aria-label="LangChain RAG sections"><a href="#pipeline">Pipeline</a><a href="#feature-map">Feature Map</a><a href="#controls">Controls</a><a href="#code">Code Lab</a><a href="#production">Production</a><a href="#failure">Failure Modes</a><a href="#sources">Sources</a></nav><main class="topic-shell" style="display:grid;gap:1rem;padding-bottom:1.8rem;"><section id="pipeline" class="panel"><div class="section-heading"><div><p class="eyebrow">Pipeline View</p><h2>What happens between a question and a grounded answer</h2></div><p class="section-copy"> This view mirrors the notebook flow: split the source material, embed the chunks, retrieve the best evidence, optionally rerank it, and then answer only from the resulting context. The model is useful here because it is held in a narrower contract than a free-form chat prompt. </p></div><div class="pipeline-grid"><article class="viz-card"><div class="viz-card__head"><div><p class="eyebrow">Retrieval controls</p><h3>Shape the evidence before the answer step</h3></div><span id="lcBadge" class="viz-pill">Grounded answer</span></div><div class="control-stack"><div class="control"><label for="lcChunk">Chunk size: <span id="lcChunkVal">500</span></label><input id="lcChunk" type="range" min="180" max="1200" step="20" value="500"></div><div class="control"><label for="lcTopK">Retrieved chunks: <span id="lcTopKVal">4</span></label><input id="lcTopK" type="range" min="1" max="12" step="1" value="4"></div><div class="control"><label for="lcRerank">Rerank strength: <span id="lcRerankVal">65%</span></label><input id="lcRerank" type="range" min="0" max="100" step="5" value="65"></div><div class="toggle-row"><label><input id="lcHybrid" type="checkbox" checked> Hybrid retrieval</label><label><input id="lcCitations" type="checkbox" checked> Force citations</label><label><input id="lcLangSmith" type="checkbox" checked> LangSmith tracing</label></div></div></article><article class="viz-card"><div class="viz-card__head"><div><p class="eyebrow">Flow diagram</p><h3>Ingest, index, retrieve, ground</h3></div><span class="viz-pill" id="lcFlowLabel">Stable retrieval</span></div><canvas id="lcCanvas" class="viz-canvas" width="980" height="340"></canvas><div class="note-grid"><article class="note-card"><strong>Source prep</strong><span id="lcSourceNote">Recursive splitting keeps each chunk readable and citeable.</span></article><article class="note-card"><strong>Retriever policy</strong><span id="lcRetrievalNote">Top-k retrieval uses metadata and optional hybrid search to widen recall.</span></article><article class="note-card"><strong>Answer contract</strong><span id="lcAnswerNote">The model should answer from the selected context, not from an unconstrained prompt.</span></article></div></article></div></section><section id="feature-map" class="panel"><div class="section-heading"><div><p class="eyebrow">Feature Map</p><h2>LangChain is the glue layer between data, models, and tools</h2></div><p class="section-copy"> The overview page is easy to miss the first time because the power is in the composition. LangChain gives you reusable building blocks for loaders, prompts, retrievers, models, tools, and traces so you can keep each decision visible instead of burying it in one giant prompt. </p></div><div class="feature-grid"><article class="feature-card"><h3>Loaders and text splitters</h3><p>Turn raw files into metadata-rich documents before any retrieval happens.</p><ul class="mini-list"><li><code>TextLoader</code> and web loaders create the document boundary.</li><li><code>RecursiveCharacterTextSplitter</code> preserves local meaning better than fixed-length slicing.</li><li>Chunk overlap keeps supporting sentences close enough to retrieve together.</li></ul></article><article class="feature-card"><h3>Embeddings and vector stores</h3><p>Convert content into searchable coordinates so semantic recall works beyond exact keywords.</p><ul class="mini-list"><li><code>OpenAIEmbeddings</code> or another embedding model maps text to vectors.</li><li><code>FAISS</code> is a quick local store for experimentation and notebook work.</li><li>Metadata filters keep the answer scoped to the right policy, product, or section.</li></ul></article><article class="feature-card"><h3>Retrieval chains</h3><p>Separate retrieval from generation so you can tune evidence quality without rewriting the app.</p><ul class="mini-list"><li><code>create_stuff_documents_chain</code> shapes the final context-aware prompt.</li><li><code>create_retrieval_chain</code> connects the retriever to the answer step.</li><li>Top-k, reranking, and hybrid search control what the model actually sees.</li></ul></article><article class="feature-card"><h3>Tools, traces, and evaluation</h3><p>LangChain is not just RAG. It also supports model tools, traceability, and iterative debugging.</p><ul class="mini-list"><li><code>@tool</code> and <code>bind_tools</code> let a model call external helpers.</li><li>LangSmith traces show prompts, tool calls, retrieved chunks, and failures.</li><li>Evaluation becomes easier when the chain is assembled from named pieces.</li></ul></article></div></section><section id="controls" class="panel"><div class="section-heading"><div><p class="eyebrow">Design choices</p><h2>Why this RAG shape works in production</h2></div><p class="section-copy"> The LangChain docs make the same decisions easy to express: model interface, retriever, prompt contract, and tracing. The important part is that each layer can be tuned independently without changing the others. </p></div><div class="detail-grid"><section class="info-block"><h4>Chunking and parsing</h4><ul class="mini-list"><li>Split by meaning first, not by arbitrary file structure.</li><li>Keep source ids, section names, and offsets for citations.</li><li>Use chunk size and overlap to balance completeness and retrieval precision.</li><li>Preserve headings so the retriever can land on useful spans instead of random slices.</li></ul></section><section class="info-block"><h4>Retrieval and reranking</h4><ul class="mini-list"><li>Dense retrieval is strong when wording varies; hybrid retrieval helps when exact terms matter.</li><li>Reranking pushes the best evidence to the top before the answer prompt sees it.</li><li>LangChain gives you building blocks, so retrieval policy stays explicit in code.</li><li>Metadata filters can scope answers to a product version, region, or document family.</li></ul></section><section class="info-block"><h4>Prompt and output rules</h4><ul class="mini-list"><li>State the answer contract in the system message so the model knows the boundary.</li><li>Ask for citations or source ids when the answer must be auditable.</li><li>Keep temperature low if the chain should prefer fidelity over style.</li><li>Structured outputs become useful when the downstream app needs labels, JSON, or tickets.</li></ul></section></div></section><section id="code" class="panel"><div class="section-heading"><div><p class="eyebrow">Code Lab</p><h2>The chain shape from the local notebook flow</h2></div><p class="section-copy"> This is the compact version of the notebook pattern: load docs, split them, build a FAISS retriever, and combine retrieval with a strict prompt that only answers from the supplied context. The second block shows how the same model can pick up tools when retrieval alone is not enough. </p></div><article class="detail-card detail-card--wide code-panel"><div class="detail-card__header"><div><p class="eyebrow">LangChain + FAISS</p><h3>Retrieval chain with grounded response rules</h3></div></div><div class="detail-grid"><section class="info-block"><h4>Why this pattern matters</h4><ul class="mini-list"><li>It keeps retrieval separate from generation, which makes debugging much easier.</li><li>The retriever can be tuned independently from the answer prompt.</li><li>It maps directly to the notebook flow in the local GenAI material.</li><li>It also keeps a clean boundary when you later add tools or routing logic.</li></ul></section><section class="info-block"><h4>Operational notes</h4><ul class="mini-list"><li>Use LangSmith tracing when the chain starts failing in subtle ways.</li><li>Adjust chunk size and top-k before changing model temperature.</li><li>Keep citation rules strict when the answer must stay grounded.</li><li>Prompts should say what to do when the context is incomplete instead of guessing silently.</li></ul></section></div><div class="code-block"><pre>from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain.chains import create_retrieval_chain
+
+docs = TextLoader("./policies/refund_policy.txt").load()
+chunks = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=80
+).split_documents(docs)
+
+vectorstore = FAISS.from_documents(chunks, OpenAIEmbeddings())
+retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "Answer only from the supplied context and cite source ids."),
+    ("human", "{input}\n\nContext:\n{context}")
+])
+
+llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0)
+document_chain = create_stuff_documents_chain(llm, prompt)
+rag_chain = create_retrieval_chain(retriever, document_chain)
+
+result = rag_chain.invoke({
+    "input": "Can annual subscriptions be refunded after 14 days?"
+})
+print(result["answer"])</pre></div><div class="detail-grid" style="margin-top:0.95rem;"><section class="info-block"><h4>Tool-aware extension</h4><ul class="mini-list"><li><code>@tool</code> works best for small, deterministic helpers.</li><li><code>bind_tools</code> lets the model choose when a helper is needed.</li><li>This is useful when retrieval covers most cases, but a live lookup is still needed for edge cases.</li></ul></section><section class="info-block"><h4>Notebook pattern</h4><ul class="mini-list"><li>The local GenAI notebook starts with a simple tool binding before moving into more complex orchestration.</li><li>That progression is why the page treats RAG as a shape, not just a single code snippet.</li></ul></section></div><div class="code-block" style="margin-top:0.95rem;"><pre>from langchain_core.tools import tool
+from langchain.chat_models import init_chat_model
+
+@tool
+def get_weather(location: str) -> str:
+    """Return a short weather summary for a location."""
+    return f"Weather check needed for {location}."
+
+model = init_chat_model("gpt-4.1-mini")
+tool_model = model.bind_tools([get_weather])
+
+messages = [
+    ("system", "Use tools when the user asks for current facts or external data."),
+    ("human", "Do I need an umbrella in Bengaluru today?")
+]
+
+response = tool_model.invoke(messages)
+print(response)</pre></div><div class="code-panel__footer"><span class="code-note">This follows the same idea as the RAG notebook: retrieve first, answer second.</span></div></article></section><section id="production" class="panel"><div class="section-heading"><div><p class="eyebrow">Production</p><h2>What makes a LangChain app trustworthy outside the notebook</h2></div><p class="section-copy"> A demo can get by with a single prompt and a vector store. A real app needs a retrieval policy, a trace trail, and explicit behavior when the evidence is weak. </p></div><div class="feature-grid"><article class="feature-card"><h3>Tracing and review</h3><p>Use traces to inspect the exact chunks and prompt that produced the answer.</p><ul class="mini-list"><li>Follow the path from question to retriever to answer.</li><li>Inspect prompt text when the model is overconfident.</li><li>Use traces to compare one configuration against another.</li></ul></article><article class="feature-card"><h3>Evaluation and tuning</h3><p>Measure the chain on answer correctness, grounding, and refusal behavior.</p><ul class="mini-list"><li>Change chunking and top-k before changing the model.</li><li>Check whether missing answers are retrieval failures or prompt failures.</li><li>Use the same question set across variants to compare behavior consistently.</li></ul></article><article class="feature-card"><h3>Fallback behavior</h3><p>Explicitly say what to do when evidence is absent or contradictory.</p><ul class="mini-list"><li>Return "I don't know" when the docs do not support a claim.</li><li>Prefer asking a clarifying question over inventing a detail.</li><li>Route to a live tool only when the question truly needs current data.</li></ul></article><article class="feature-card"><h3>Metadata discipline</h3><p>Keep source names, versions, and offsets so citations remain meaningful.</p><ul class="mini-list"><li>Metadata gives you scope control and better auditability.</li><li>Source ids should map back to the original document quickly.</li><li>This is especially important for policy or support answers.</li></ul></article></div></section><section id="failure" class="panel"><div class="section-heading"><div><p class="eyebrow">Failure Modes</p><h2>Where a nice-looking RAG app quietly breaks</h2></div></div><div class="failure-grid"><article class="failure-card"><h3>Chunk boundaries hide the answer</h3><p>The answer is present in the corpus, but the split cut the relevant sentence away from its supporting context.</p></article><article class="failure-card"><h3>Retriever recall is too narrow</h3><p>Top-k is too low, metadata filters are too strict, or the hybrid signal is missing when exact terms matter.</p></article><article class="failure-card"><h3>Prompt is not strict enough</h3><p>The model sounds confident even when the evidence is weak, so citations become decoration instead of control.</p></article><article class="failure-card"><h3>Tracing is an afterthought</h3><p>Without trace data, you cannot tell whether the failure came from the retriever, the prompt, or the model.</p></article></div></section><section id="sources" class="panel"><div class="section-heading"><div><p class="eyebrow">Sources</p><h2>Reference basis for this page</h2></div></div><div class="source-list"><article class="source-card"><div><p class="source-card__meta">Official docs</p><h3>LangChain Overview</h3></div><p>LangChain positions itself as the higher-level layer for models, tools, retrieval, and prebuilt agent architecture.</p><div class="source-card__footer"><a class="action-link action-link--primary" href="https://docs.langchain.com/oss/python/langchain/overview" target="_blank" rel="noreferrer">Open docs</a></div></article><article class="source-card"><div><p class="source-card__meta">Local notebook</p><h3>GenAICode RAG notebooks</h3></div><p>This page follows the notebook patterns around document loading, splitting, vector search, and retrieval chains.</p></article></div></section></main><script>
+    (function () {
+      const c = document.getElementById("lcCanvas");
+      const ctx = c.getContext("2d");
+      const ui = {
+        chunk: document.getElementById("lcChunk"),
+        chunkVal: document.getElementById("lcChunkVal"),
+        topK: document.getElementById("lcTopK"),
+        topKVal: document.getElementById("lcTopKVal"),
+        rerank: document.getElementById("lcRerank"),
+        rerankVal: document.getElementById("lcRerankVal"),
+        hybrid: document.getElementById("lcHybrid"),
+        citations: document.getElementById("lcCitations"),
+        tracing: document.getElementById("lcLangSmith"),
+        badge: document.getElementById("lcBadge"),
+        flowLabel: document.getElementById("lcFlowLabel"),
+        sourceNote: document.getElementById("lcSourceNote"),
+        retrievalNote: document.getElementById("lcRetrievalNote"),
+        answerNote: document.getElementById("lcAnswerNote")
+      };
+
+      const palette = {
+        bg: getVar("--code-bg"),
+        border: getVar("--border"),
+        text: getVar("--text"),
+        muted: getVar("--muted"),
+        teal: getVar("--accent"),
+        blue: getVar("--highlight"),
+        green: getVar("--success"),
+        amber: getVar("--warning")
+      };
+
+      [ui.chunk, ui.topK, ui.rerank, ui.hybrid, ui.citations, ui.tracing].forEach((el) => {
+        el.addEventListener("input", render);
+        el.addEventListener("change", render);
+      });
+
+      function getVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      function round(v) {
+        return Math.round(v);
+      }
+
+      function drawRect(x, y, w, h, fill, stroke) {
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke || fill;
+        ctx.lineWidth = 1.2;
+        roundRect(ctx, x, y, w, h, 10);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function roundRect(c2d, x, y, w, h, r) {
+        c2d.beginPath();
+        c2d.moveTo(x + r, y);
+        c2d.arcTo(x + w, y, x + w, y + h, r);
+        c2d.arcTo(x + w, y + h, x, y + h, r);
+        c2d.arcTo(x, y + h, x, y, r);
+        c2d.arcTo(x, y, x + w, y, r);
+        c2d.closePath();
+      }
+
+      function arrow(x1, y1, x2, y2, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - 10 * Math.cos(angle - Math.PI / 7), y2 - 10 * Math.sin(angle - Math.PI / 7));
+        ctx.lineTo(x2 - 10 * Math.cos(angle + Math.PI / 7), y2 - 10 * Math.sin(angle + Math.PI / 7));
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
+
+      function label(text, x, y, color, size, weight, align) {
+        ctx.fillStyle = color;
+        ctx.font = `${weight || 600} ${size || 12}px ${getComputedStyle(document.body).fontFamily}`;
+        ctx.textAlign = align || "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(text, x, y);
+      }
+
+      function render() {
+        const chunk = +ui.chunk.value;
+        const topK = +ui.topK.value;
+        const rerank = +ui.rerank.value;
+        const hybrid = ui.hybrid.checked;
+        const citations = ui.citations.checked;
+        const tracing = ui.tracing.checked;
+        const clarity = Math.max(30, Math.min(100, Math.round((chunk / 10) + rerank * 0.7 - topK * 4)));
+        const contextPressure = Math.max(28, Math.min(100, Math.round((chunk / 18) + topK * 7)));
+
+        ui.chunkVal.textContent = String(chunk);
+        ui.topKVal.textContent = String(topK);
+        ui.rerankVal.textContent = `${rerank}%`;
+        ui.badge.textContent = hybrid ? "Hybrid retrieval" : "Dense retrieval";
+        ui.flowLabel.textContent = citations ? "Citation enforced" : "Citation optional";
+        ui.sourceNote.textContent = chunk >= 720
+          ? "Larger chunks preserve more source context but make retrieval less precise."
+          : "Smaller chunks keep retrieval sharp, but the answer may need more evidence stitching.";
+        ui.retrievalNote.textContent = topK >= 6
+          ? "Higher top-k improves recall, but too many chunks can crowd the prompt."
+          : "Lower top-k is cleaner, but it can miss supporting passages when the wording is indirect.";
+        ui.answerNote.textContent = citations
+          ? "The answer step is constrained to explain itself with the retrieved passages."
+          : "The answer step can drift unless the prompt contract is strict.";
+
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.fillStyle = palette.bg;
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.strokeStyle = palette.border;
+        ctx.globalAlpha = 0.4;
+        for (let x = 20; x < c.width; x += 60) {
+          ctx.beginPath();
+          ctx.moveTo(x, 18);
+          ctx.lineTo(x, c.height - 18);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+
+        const nodes = [
+          { x: 28, y: 70, w: 150, h: 72, title: "Documents", sub: "Parse and split", color: palette.teal },
+          { x: 210, y: 70, w: 150, h: 72, title: "Embeddings", sub: "Vectorize chunks", color: palette.blue },
+          { x: 392, y: 70, w: 160, h: 72, title: "Retriever", sub: hybrid ? "Hybrid search" : "Dense search", color: palette.green },
+          { x: 586, y: 70, w: 160, h: 72, title: "Reranker", sub: `${rerank}% focus`, color: palette.amber },
+          { x: 778, y: 70, w: 172, h: 72, title: "Answer", sub: citations ? "Cite sources" : "Loose answer", color: palette.teal }
+        ];
+
+        nodes.forEach((node, index) => {
+          drawRect(node.x, node.y, node.w, node.h, "rgba(16, 33, 51, 0.92)", node.color);
+          label(node.title, node.x + 12, node.y + 12, node.color, 13, 700);
+          label(node.sub, node.x + 12, node.y + 36, palette.text, 11, 600);
+          if (index < nodes.length - 1) {
+            arrow(node.x + node.w, node.y + node.h / 2, nodes[index + 1].x - 12, nodes[index + 1].y + node.h / 2, node.color);
+          }
+        });
+
+        const bars = [
+          { label: "Context pressure", value: contextPressure, color: palette.amber },
+          { label: "Retrieval clarity", value: clarity, color: palette.green },
+          { label: "Traceability", value: tracing ? 92 : 48, color: palette.blue }
+        ];
+
+        bars.forEach((bar, index) => {
+          const y = 190 + index * 38;
+          label(bar.label, 34, y, palette.muted, 11, 600);
+          drawRect(180, y - 2, 680, 14, "rgba(23, 49, 75, 0.82)", palette.border);
+          drawRect(180, y - 2, 680 * (bar.value / 100), 14, `rgba(${bar.color === palette.amber ? "251,146,60" : bar.color === palette.green ? "34,197,94" : "56,189,248"}, 0.9)`, bar.color);
+        });
+      }
+
+      render();
+    })();
+  </script></body></html>

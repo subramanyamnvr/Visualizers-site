@@ -1,0 +1,481 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>LangGraph Agentic Workflow</title><meta name="description" content="Standalone LangGraph visualizer focused on durable execution, state, interrupts, checkpoints, and human-in-the-loop control."><script src="../theme-sync.js"></script><link rel="stylesheet" href="../genai-llm-systems/styles.css"><style>
+    :root {
+      --accent: #2563eb;
+      --accent-strong: #1d4ed8;
+      --highlight: #38bdf8;
+    }
+
+    body.topic-page {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 28%),
+        linear-gradient(180deg, #06111d 0%, #091625 100%);
+      color: var(--text);
+    }
+
+    .topic-shell {
+      width: min(1360px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 1.1rem 0 1.75rem;
+    }
+
+    .topic-shell .panel {
+      scroll-margin-top: 5.25rem;
+    }
+
+    .topic-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .topic-kicker {
+      margin: 0 0 0.5rem;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .topic-nav {
+      position: sticky;
+      top: 0.85rem;
+      z-index: 6;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin: 0 0 1rem;
+      padding: 0.75rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(7, 17, 29, 0.98), rgba(7, 17, 29, 0.86));
+      backdrop-filter: blur(10px);
+    }
+
+    .topic-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.55rem;
+      padding: 0.68rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--muted-strong);
+      text-decoration: none;
+    }
+
+    .topic-nav a:hover,
+    .topic-nav a:focus-visible {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .topic-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .topic-metric {
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+    }
+
+    .topic-metric strong {
+      display: block;
+      font-size: 1.14rem;
+      color: var(--text);
+    }
+
+    .topic-metric span {
+      display: block;
+      margin-top: 0.25rem;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.45fr);
+      gap: 1rem;
+    }
+
+    .viz-card {
+      display: grid;
+      gap: 1rem;
+      min-width: 0;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-strong);
+    }
+
+    .viz-card__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .viz-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2rem;
+      padding: 0.35rem 0.65rem;
+      border: 1px solid rgba(37, 99, 235, 0.45);
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.12);
+      color: var(--muted-strong);
+      font-size: 0.84rem;
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .control {
+      display: grid;
+      gap: 0.38rem;
+    }
+
+    .control label {
+      color: var(--muted-strong);
+      font-size: 0.92rem;
+    }
+
+    .control input,
+    .control select {
+      accent-color: var(--accent);
+    }
+
+    .control select {
+      min-height: 2.6rem;
+      padding: 0.62rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .toggle-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--muted-strong);
+      font-size: 0.9rem;
+    }
+
+    .toggle-row input {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--accent);
+    }
+
+    .viz-canvas {
+      width: 100%;
+      min-height: 320px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--code-bg);
+    }
+
+    .note-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .note-card {
+      padding: 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .note-card strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: var(--text);
+    }
+
+    .failure-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .feature-card {
+      padding: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .feature-card h3 {
+      margin: 0 0 0.45rem;
+      font-size: 1rem;
+    }
+
+    .feature-card p {
+      margin: 0 0 0.65rem;
+      color: var(--muted);
+    }
+
+    .failure-card {
+      padding: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-muted);
+    }
+
+    .failure-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 0.98rem;
+    }
+
+    .failure-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1120px) {
+      .topic-hero,
+      .pipeline-grid,
+      .feature-grid,
+      .note-grid,
+      .failure-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style></head><body class="topic-page"><header class="topic-shell topic-hero"><div class="hero__copy"><p class="topic-kicker">GenAI · Stateful Orchestration</p><h1>LangGraph Agentic Workflow</h1><p class="hero__lede"> A standalone visualizer for durable, inspectable agent loops. It follows the LangGraph docs and the local HITL and agent notebooks: encode state, branch through nodes, persist checkpoints, and resume after human approval or tool execution. The key idea is that the workflow is a graph, not a hidden loop. </p><p class="hero__note"> Built from the LangGraph overview plus the local graph notebooks and HITL examples in `GenAICode`. </p></div><div class="hero__stats"><div class="topic-metrics"><article class="topic-metric"><strong>Typed state</strong><span>Messages and working memory flow through the graph</span></article><article class="topic-metric"><strong>Branching</strong><span>Nodes and conditional edges make control flow explicit</span></article><article class="topic-metric"><strong>Interrupts</strong><span>Pause for human approval when the decision matters</span></article><article class="topic-metric"><strong>Persistence</strong><span>MemorySaver and checkpoints keep runs resumable</span></article></div></div></header><nav class="topic-shell topic-nav" aria-label="LangGraph sections"><a href="#workflow">Workflow</a><a href="#graph-anatomy">Graph Anatomy</a><a href="#controls">Controls</a><a href="#code">Code Lab</a><a href="#operations">Operations</a><a href="#failure">Failure Modes</a><a href="#sources">Sources</a></nav><main class="topic-shell" style="display:grid;gap:1rem;padding-bottom:1.8rem;"><section id="workflow" class="panel"><div class="section-heading"><div><p class="eyebrow">Workflow View</p><h2>How LangGraph makes the control loop explicit</h2></div><p class="section-copy"> The graph starts from state, routes through nodes, and either calls tools, asks for approval, or finishes. That makes it easier to debug than a single opaque prompt loop because every transition has a name and a reason. </p></div><div class="pipeline-grid"><article class="viz-card"><div class="viz-card__head"><div><p class="eyebrow">Execution controls</p><h3>Choose the agent shape before the loop starts</h3></div><span id="lgBadge" class="viz-pill">Durable execution</span></div><div class="control-stack"><div class="control"><label for="lgMode">Agent mode</label><select id="lgMode"><option value="chat">Chat only</option><option value="tool" selected>Tool using</option><option value="hitl">Human-in-the-loop</option></select></div><div class="control"><label for="lgCheckpoint">Checkpoint depth: <span id="lgCheckpointVal">On</span></label><input id="lgCheckpoint" type="range" min="0" max="100" step="25" value="75"></div><div class="control"><label for="lgLoops">Iteration budget: <span id="lgLoopsVal">3</span></label><input id="lgLoops" type="range" min="1" max="6" step="1" value="3"></div><div class="toggle-row"><label><input id="lgMemory" type="checkbox" checked> MemorySaver</label><label><input id="lgInterrupt" type="checkbox" checked> Interrupts</label><label><input id="lgResume" type="checkbox" checked> Resume support</label></div></div></article><article class="viz-card"><div class="viz-card__head"><div><p class="eyebrow">Graph diagram</p><h3>State, route, tool, review, finish</h3></div><span class="viz-pill" id="lgFlowLabel">Explicit control flow</span></div><canvas id="lgCanvas" class="viz-canvas" width="980" height="340"></canvas><div class="note-grid"><article class="note-card"><strong>State</strong><span id="lgStateNote">Messages and metadata travel with the graph rather than living in hidden globals.</span></article><article class="note-card"><strong>Branching</strong><span id="lgBranchNote">Conditional edges decide whether the next step is a tool call, a review, or a final answer.</span></article><article class="note-card"><strong>Recovery</strong><span id="lgRecoveryNote">Checkpointing and resume logic let the graph continue after pause or failure.</span></article></div></article></div></section><section id="graph-anatomy" class="panel"><div class="section-heading"><div><p class="eyebrow">Graph Anatomy</p><h2>LangGraph is built from a small set of explicit primitives</h2></div><p class="section-copy"> The power of LangGraph is not that it hides orchestration. It does the opposite: it gives you a typed state object, named nodes, directed edges, and checkpointing so the agent can be debugged like a system. </p></div><div class="feature-grid"><article class="feature-card"><h3>State schema</h3><p>The graph carries a typed state object from node to node.</p><ul class="mini-list"><li><code>TypedDict</code> gives the graph a shape you can inspect.</li><li><code>add_messages</code> accumulates conversation history without manually appending everywhere.</li><li>Other fields can hold tool outputs, routing flags, or review decisions.</li></ul></article><article class="feature-card"><h3>Nodes and edges</h3><p>Each node is a step. Each edge is a decision about what happens next.</p><ul class="mini-list"><li>Nodes can call an LLM, a tool, a validator, or a human review function.</li><li>Edges make the next hop visible instead of hiding it inside a prompt.</li><li>Graphs are easier to replay because the path is explicit.</li></ul></article><article class="feature-card"><h3>Conditional routing</h3><p>LangGraph can branch on state instead of forcing every case through one prompt.</p><ul class="mini-list"><li>Use routing when the next step depends on tool results or confidence.</li><li>Loop back to the agent after tool execution only when the graph still needs an answer.</li><li>Send risky decisions to review instead of allowing blind execution.</li></ul></article><article class="feature-card"><h3>Persistence and resume</h3><p>Checkpoints make long-running flows recoverable.</p><ul class="mini-list"><li><code>MemorySaver</code> keeps thread state around for follow-up steps.</li><li><code>thread_id</code> lets a run be resumed instead of restarted.</li><li>This is what turns a toy loop into something that can survive real usage.</li></ul></article></div></section><section id="controls" class="panel"><div class="section-heading"><div><p class="eyebrow">Design choices</p><h2>Why LangGraph is the right layer for hard agent flows</h2></div><p class="section-copy"> The LangGraph docs frame this as low-level orchestration for long-running, stateful agents with durable execution, human-in-the-loop support, memory, and observability. The page leans on those primitives rather than a generic "agent" description so the control loop stays inspectable. </p></div><div class="detail-grid"><section class="info-block"><h4>Explicit state</h4><ul class="mini-list"><li>State is typed and visible, so the workflow does not depend on hidden prompt state.</li><li>Messages, decisions, and tool results can all be carried forward deliberately.</li><li>This is what makes resume and replay practical instead of fragile.</li><li>State can also hold flags for approval, retries, or route selection.</li></ul></section><section class="info-block"><h4>Interrupts and review</h4><ul class="mini-list"><li>Pause the graph when a tool action is risky or a human decision is needed.</li><li>Resume from a checkpoint once the decision is approved.</li><li>That turns agent autonomy into something you can actually govern.</li><li>Use this when the model should not take irreversible actions unreviewed.</li></ul></section><section class="info-block"><h4>Tool execution</h4><ul class="mini-list"><li><code>ToolNode</code> wraps tool calling as a graph step instead of a hidden function call.</li><li><code>tools_condition</code> keeps the routing logic deterministic.</li><li>Tool use can be mixed with normal chat turns, review points, and retries.</li></ul></section></div></section><section id="code" class="panel"><div class="section-heading"><div><p class="eyebrow">Code Lab</p><h2>The graph pattern from the local notebook flow</h2></div><p class="section-copy"> This code follows the same shape as the local HITL examples: add a typed state, define nodes, connect them with conditional edges, and compile with a memory-backed checkpointer. The second block shows how an interrupt boundary can pause a run and resume it later. </p></div><article class="detail-card detail-card--wide code-panel"><div class="detail-card__header"><div><p class="eyebrow">LangGraph + HITL</p><h3>Durable graph with tool execution and human approval</h3></div></div><div class="detail-grid"><section class="info-block"><h4>Why this pattern matters</h4><ul class="mini-list"><li>It makes a multi-step agent loop inspectable at every hop.</li><li>It matches the LangGraph docs: durable execution, interrupts, memory, and state.</li><li>It maps to the local HITL and agent notebooks in the GenAICode folder.</li><li>It is easier to test because each node can be exercised independently.</li></ul></section><section class="info-block"><h4>Operational notes</h4><ul class="mini-list"><li>Use checkpoints when a workflow can pause, fail, or need review.</li><li>Keep the state schema narrow so routing stays understandable.</li><li>Trace node transitions to catch loops before they burn tokens.</li><li>Prefer a graph when the flow can branch, replay, or require approval.</li></ul></section></div><div class="code-block"><pre>from typing import Annotated, TypedDict
+from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.tools import tool
+from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.types import interrupt
+from langchain_openai import ChatOpenAI
+
+@tool
+def lookup_policy(topic: str) -> str:
+    """Return a short policy summary for a topic."""
+    return f"Policy summary for {topic}: check the handbook and verify with the owner."
+
+class AgentState(TypedDict):
+    messages: Annotated[list[BaseMessage], add_messages]
+
+llm = ChatOpenAI(model="gpt-4.1-mini")
+tools = [lookup_policy]
+model = llm.bind_tools(tools)
+
+def agent_node(state: AgentState):
+    response = model.invoke(state["messages"])
+    return {"messages": [response]}
+
+graph = StateGraph(AgentState)
+graph.add_node("agent", agent_node)
+graph.add_node("tools", ToolNode(tools))
+graph.add_edge(START, "agent")
+graph.add_conditional_edges("agent", tools_condition)
+graph.add_edge("tools", "agent")
+
+app = graph.compile(checkpointer=MemorySaver())
+result = app.invoke(
+    {"messages": [HumanMessage(content="Summarize the policy for annual refunds.")]},
+    config={"configurable": {"thread_id": "refund-demo"}}
+)
+print(result["messages"][-1].content)</pre></div><div class="detail-grid" style="margin-top:0.95rem;"><section class="info-block"><h4>Interrupt and resume</h4><ul class="mini-list"><li><code>interrupt()</code> pauses the flow at the exact point that needs review.</li><li><code>Command</code> resumes the graph with a decision or updated state.</li><li>This pattern is ideal for approvals, safety checks, and escalations.</li></ul></section><section class="info-block"><h4>Notebook pattern</h4><ul class="mini-list"><li>The local HITL notebook uses a similar stop-and-resume shape.</li><li>That is why this page treats the graph as a workflow with control points, not a chat wrapper.</li></ul></section></div><div class="code-block" style="margin-top:0.95rem;"><pre>from langgraph.types import interrupt, Command
+from langchain_core.messages import AIMessage
+
+def review_node(state):
+    decision = interrupt({"reason": "Approve the tool action?"})
+    if decision.get("approved"):
+        return {"messages": [AIMessage(content="Approved. Continuing the graph.")]}
+    return {"messages": [AIMessage(content="Action blocked by reviewer.")]}
+
+result = app.invoke(
+    {"messages": [HumanMessage(content="Run the risky step.") ]},
+    config={"configurable": {"thread_id": "hitl-demo"}}
+)
+
+resume_result = app.invoke(
+    Command(resume={"approved": True}),
+    config={"configurable": {"thread_id": "hitl-demo"}}
+)</pre></div><div class="code-panel__footer"><span class="code-note">The graph stays resumable because the state and checkpoint store are explicit.</span></div></article></section><section id="operations" class="panel"><div class="section-heading"><div><p class="eyebrow">Operations</p><h2>What makes a LangGraph app dependable in practice</h2></div><p class="section-copy"> The interesting part of LangGraph is not just that it can branch. It is that the path can be inspected, resumed, and governed when the workflow becomes long-running or safety-sensitive. </p></div><div class="feature-grid"><article class="feature-card"><h3>Durable execution</h3><p>Long-running work survives pauses and restarts because checkpoints preserve state.</p><ul class="mini-list"><li>Useful for approvals, external API latency, and multi-step investigations.</li><li>Prevents a single failure from discarding all intermediate progress.</li></ul></article><article class="feature-card"><h3>Streaming and visibility</h3><p>Each step can be traced, streamed, or replayed as a separate node transition.</p><ul class="mini-list"><li>That makes debugging easier than reading one huge assistant response.</li><li>You can inspect the exact node that produced the next state.</li></ul></article><article class="feature-card"><h3>Guardrails</h3><p>Review nodes, routing rules, and typed state act as safety boundaries.</p><ul class="mini-list"><li>Stop before tool calls that might mutate data or spend money.</li><li>Keep risky steps visible to people who need to approve them.</li></ul></article><article class="feature-card"><h3>Graph testing</h3><p>Named nodes make it easier to test transitions and rerun problem cases.</p><ul class="mini-list"><li>Validate one node at a time before connecting the whole workflow.</li><li>Use a shared state fixture to reproduce edge cases cleanly.</li></ul></article></div></section><section id="failure" class="panel"><div class="section-heading"><div><p class="eyebrow">Failure Modes</p><h2>Where agentic workflows break if the graph is too loose</h2></div></div><div class="failure-grid"><article class="failure-card"><h3>Looping without a stop rule</h3><p>If the graph can always decide to call another tool or ask another question, the agent can spin forever.</p></article><article class="failure-card"><h3>State drift</h3><p>Once the state object becomes a dumping ground, routing gets fuzzy and debugging gets harder.</p></article><article class="failure-card"><h3>Approval is too slow</h3><p>Human-in-the-loop control only works when the interruption is easy enough that people will actually use it.</p></article><article class="failure-card"><h3>Resume state is too loose</h3><p>If the resumed state is not shaped carefully, the graph can continue with the wrong assumptions or stale data.</p></article></div></section><section id="sources" class="panel"><div class="section-heading"><div><p class="eyebrow">Sources</p><h2>Reference basis for this page</h2></div></div><div class="source-list"><article class="source-card"><div><p class="source-card__meta">Official docs</p><h3>LangGraph Overview</h3></div><p>LangGraph frames agents as long-running, stateful workflows with durable execution, interrupts, and memory.</p><div class="source-card__footer"><a class="action-link action-link--primary" href="https://docs.langchain.com/oss/python/langgraph/overview" target="_blank" rel="noreferrer">Open docs</a></div></article><article class="source-card"><div><p class="source-card__meta">Local notebook</p><h3>GenAICode LangGraph notebooks</h3></div><p>This page follows the local notebook patterns for graph state, tool nodes, and human-in-the-loop interruption.</p></article></div></section></main><script>
+    (function () {
+      const c = document.getElementById("lgCanvas");
+      const ctx = c.getContext("2d");
+      const ui = {
+        mode: document.getElementById("lgMode"),
+        checkpoint: document.getElementById("lgCheckpoint"),
+        checkpointVal: document.getElementById("lgCheckpointVal"),
+        loops: document.getElementById("lgLoops"),
+        loopsVal: document.getElementById("lgLoopsVal"),
+        memory: document.getElementById("lgMemory"),
+        interrupt: document.getElementById("lgInterrupt"),
+        resume: document.getElementById("lgResume"),
+        badge: document.getElementById("lgBadge"),
+        flowLabel: document.getElementById("lgFlowLabel"),
+        stateNote: document.getElementById("lgStateNote"),
+        branchNote: document.getElementById("lgBranchNote"),
+        recoveryNote: document.getElementById("lgRecoveryNote")
+      };
+
+      const palette = {
+        bg: getVar("--code-bg"),
+        border: getVar("--border"),
+        text: getVar("--text"),
+        muted: getVar("--muted"),
+        blue: getVar("--accent"),
+        cyan: getVar("--highlight"),
+        green: getVar("--success"),
+        amber: getVar("--warning")
+      };
+
+      [ui.mode, ui.checkpoint, ui.loops, ui.memory, ui.interrupt, ui.resume].forEach((el) => {
+        el.addEventListener("input", render);
+        el.addEventListener("change", render);
+      });
+
+      function getVar(name) {
+        return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      }
+
+      function roundRect(c2d, x, y, w, h, r) {
+        c2d.beginPath();
+        c2d.moveTo(x + r, y);
+        c2d.arcTo(x + w, y, x + w, y + h, r);
+        c2d.arcTo(x + w, y + h, x, y + h, r);
+        c2d.arcTo(x, y + h, x, y, r);
+        c2d.arcTo(x, y, x + w, y, r);
+        c2d.closePath();
+      }
+
+      function drawRect(x, y, w, h, fill, stroke) {
+        ctx.fillStyle = fill;
+        ctx.strokeStyle = stroke || fill;
+        ctx.lineWidth = 1.2;
+        roundRect(ctx, x, y, w, h, 10);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      function arrow(x1, y1, x2, y2, color) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - 10 * Math.cos(angle - Math.PI / 7), y2 - 10 * Math.sin(angle - Math.PI / 7));
+        ctx.lineTo(x2 - 10 * Math.cos(angle + Math.PI / 7), y2 - 10 * Math.sin(angle + Math.PI / 7));
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
+
+      function label(text, x, y, color, size, weight, align) {
+        ctx.fillStyle = color;
+        ctx.font = `${weight || 600} ${size || 12}px ${getComputedStyle(document.body).fontFamily}`;
+        ctx.textAlign = align || "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(text, x, y);
+      }
+
+      function render() {
+        const mode = ui.mode.value;
+        const checkpoint = +ui.checkpoint.value;
+        const loops = +ui.loops.value;
+        const memory = ui.memory.checked;
+        const interrupt = ui.interrupt.checked;
+        const resume = ui.resume.checked;
+
+        ui.checkpointVal.textContent = checkpoint >= 50 ? "On" : "Light";
+        ui.loopsVal.textContent = String(loops);
+        ui.badge.textContent = mode === "chat" ? "Fast path" : mode === "tool" ? "Tool loop" : "Human-in-the-loop";
+        ui.flowLabel.textContent = memory ? "State persists" : "State ephemeral";
+        ui.stateNote.textContent = memory
+          ? "Messages and working memory stay attached to the graph."
+          : "Without memory, every turn starts from a shallower state.";
+        ui.branchNote.textContent = mode === "chat"
+          ? "The graph can route directly to a response node when no tool is needed."
+          : mode === "tool"
+            ? "Tool nodes are active, so the graph can call external systems and then continue."
+            : "An interrupt node makes the human approval boundary explicit.";
+        ui.recoveryNote.textContent = resume
+          ? "Checkpointing plus resume support lets the workflow continue after a pause or failure."
+          : "Without resume support, the workflow behaves more like a one-shot exchange.";
+
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.fillStyle = palette.bg;
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.strokeStyle = palette.border;
+        ctx.globalAlpha = 0.35;
+        for (let x = 20; x < c.width; x += 60) {
+          ctx.beginPath();
+          ctx.moveTo(x, 18);
+          ctx.lineTo(x, c.height - 18);
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+
+        const nodes = [
+          { x: 28, y: 70, w: 126, h: 72, title: "State", sub: memory ? "Persisted" : "Ephemeral", color: palette.blue },
+          { x: 176, y: 70, w: 150, h: 72, title: "Decision", sub: mode === "chat" ? "Answer" : "Route", color: palette.cyan },
+          { x: 348, y: 70, w: 150, h: 72, title: "Tool node", sub: mode === "tool" || mode === "hitl" ? "Enabled" : "Idle", color: mode === "chat" ? palette.border : palette.green },
+          { x: 520, y: 70, w: 160, h: 72, title: "Interrupt", sub: interrupt && mode === "hitl" ? "Pause" : "Skip", color: mode === "hitl" ? palette.amber : palette.border },
+          { x: 704, y: 70, w: 178, h: 72, title: "Checkpoint", sub: checkpoint >= 50 ? "Stored" : "Light", color: checkpoint >= 50 ? palette.blue : palette.border },
+          { x: 904 - 2, y: 70, w: 60, h: 72, title: "End", sub: resume ? "Resume" : "Close", color: palette.cyan }
+        ];
+
+        nodes.forEach((node, index) => {
+          drawRect(node.x, node.y, node.w, node.h, "rgba(16, 33, 51, 0.92)", node.color);
+          label(node.title, node.x + 10, node.y + 12, node.color, 12, 700);
+          label(node.sub, node.x + 10, node.y + 36, palette.text, 11, 600);
+          if (index < nodes.length - 1) {
+            arrow(node.x + node.w, node.y + node.h / 2, nodes[index + 1].x - 12, nodes[index + 1].y + node.h / 2, node.color);
+          }
+        });
+
+        const lanes = [
+          { label: "Loop budget", value: Math.round((loops / 6) * 100), color: palette.cyan },
+          { label: "Checkpoint depth", value: checkpoint, color: palette.blue },
+          { label: "Human oversight", value: mode === "hitl" ? 90 : mode === "tool" ? 55 : 15, color: palette.amber }
+        ];
+
+        lanes.forEach((lane, index) => {
+          const y = 190 + index * 38;
+          label(lane.label, 34, y, palette.muted, 11, 600);
+          drawRect(180, y - 2, 680, 14, "rgba(23, 49, 75, 0.82)", palette.border);
+          drawRect(180, y - 2, 680 * (lane.value / 100), 14, `rgba(${lane.color === palette.amber ? "251,146,60" : lane.color === palette.blue ? "37,99,235" : "56,189,248"}, 0.9)`, lane.color);
+        });
+      }
+
+      render();
+    })();
+  </script></body></html>
